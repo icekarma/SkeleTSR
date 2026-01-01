@@ -1,0 +1,9 @@
+*.COM
+*.EXE
+*.LST
+*.MAP
+*.OBJ
+*.TDS
+*.TD
+*.TR
+.vs/
