@@ -155,7 +155,7 @@ Uninstall endp
 ;; Initialization code
 ;;================================================
 
-_INIT_TEXT segment para public 'INITCODE'
+_INIT_TEXT segment byte public 'INITCODE'
 
 START_OF_NONRESIDENT_AREA label byte
 

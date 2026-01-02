@@ -18,7 +18,7 @@ _DATA       segment byte public 'DATA'
 _DATA       ends
 
 ; Initialization code segment
-_INIT_TEXT  segment para public 'INITCODE'
+_INIT_TEXT  segment byte public 'INITCODE'
 _INIT_TEXT  ends
 
 ; Initialization data segment
