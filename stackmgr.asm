@@ -20,7 +20,7 @@ public StackRestore
 
 StackSize        equ 64                             ; Fixed size per stack
 StackSizeShift   equ  6                             ; log2(StackSize), for shifts
-MaxStacks        equ  3                             ; Maximum number of stacks
+MaxStacks        equ  4                             ; Maximum number of stacks
 
 StackPoolBase    dw  START_OF_NONRESIDENT_AREA
 StacksInUse      dw  0
