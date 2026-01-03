@@ -3,6 +3,7 @@
 *.LST
 *.MAP
 *.OBJ
+*.SBR
 *.TDS
 *.TD
 *.TR
