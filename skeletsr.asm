@@ -64,7 +64,7 @@ Main proc near
     cld
 
     ;; --- Save PSP ---
-    mov word ptr cs:[Psp], ds
+    mov cs:[Psp], ds
 
     ;; --- Set up segment registers ---
 if @Model EQ 1
@@ -110,7 +110,7 @@ Main endp
 ;; Outputs:  none (never returns)
 InstallCommand proc near
     ;; --- Are we already installed? ---
-    cmp byte ptr [MultiplexId], 0
+    cmp [MultiplexId], 0
     jne @@AlreadyInstalled
 
     ;; --- Search for a free multiplex ID and store it ---
@@ -142,7 +142,7 @@ InstallCommand proc near
     DosWriteString SuccessfullyInstalledMsg
 
     ;; --- Free environment ---
-    mov ax, word ptr ds:[2Ch]    ; AX = block to free: the environment segment
+    mov ax, ds:[2Ch]             ; AX = block to free: the environment segment
     cmp ax, -1                   ; no segment allocated?
     je @@CalcResident
 
@@ -170,7 +170,7 @@ InstallCommand endp
 ;; Outputs:  none (never returns)
 UninstallCommand proc near
     ; Get our multiplex ID
-    cmp byte ptr [MultiplexId], 0
+    cmp [MultiplexId], 0
     je @@NotInstalled
 
     ; Format the multiplex ID into MultiplexIdMsg and print it
@@ -178,7 +178,7 @@ UninstallCommand proc near
     DosWriteString MultiplexIdMsg
 
     ; Call our uninstall subfunction
-    mov ah, byte ptr [MultiplexId]
+    mov ah, [MultiplexId]
     mov al, 1
     int 2Fh
 
@@ -230,10 +230,10 @@ SplitCommandLine proc near
 
     ;; --- Split command line into individual parameters ---
     mov si, 80h                  ; offset of command line length byte
-    mov cl, byte ptr ds:[si]     ; get length
+    mov cl, ds:[si]              ; get length
     inc si                       ; point to first character
 
-    mov word ptr [argc], 0       ; initialize argc to 0
+    mov [argc], 0                ; initialize argc to 0
     lea bp, [argv]               ; point BP to argv array
     lea di, [commandLineBuffer]  ; point DI to command line buffer
     lsr es, ds
@@ -258,10 +258,10 @@ SplitCommandLine proc near
 
     ;; --- Found start of parameter ---
     ; Increment argc
-    inc word ptr [argc]
+    inc [argc]
 
     ; Store pointer to parameter in argv
-    mov word ptr [bp], di
+    mov [bp], di
     add bp, 2                    ; advance to next argv entry
     stosb                        ; copy character to buffer
 
@@ -291,10 +291,10 @@ SplitCommandLine proc near
     pop ax
 
     ; Increment argc
-    inc word ptr [argc]
+    inc [argc]
 
     ; Store pointer to parameter in argv
-    mov word ptr [bp], di
+    mov [bp], di
     add bp, 2                    ; advance to next argv entry
     stosb                        ; copy character to buffer
 
@@ -326,14 +326,14 @@ ParseCommandLine proc near
     call SplitCommandLine
 
     xor bx, bx
-    mov dx, word ptr [argc]
+    mov dx, [argc]
 
 @@Top:
     or dx, dx
     jz @@Fail                    ; no more parameters
     dec dx
 
-    mov si, word ptr [bx + argv] ; get pointer to parameter
+    mov si, [bx + argv]          ; get pointer to parameter
     add bx, 2                    ; advance to next parameter
 
     lodsb
@@ -420,7 +420,7 @@ FindFreeMultiplexId proc near
     or al, al
     jnz @@NextId ; if AL is not 0, ID is not free
 
-    mov byte ptr [MultiplexId], ch
+    mov [MultiplexId], ch
     clc ; clear carry to indicate success
     ret
 
@@ -467,7 +467,7 @@ FindOurMultiplexId proc near
 
     ;; --- Our ID found ---
 @@Found:
-    mov byte ptr [MultiplexId], ch
+    mov [MultiplexId], ch
     ret
 FindOurMultiplexId endp
 
@@ -481,13 +481,13 @@ FormatMultiplexId proc near
     push ax bx
 
     ; convert multiplex ID to hex
-    mov ah, byte ptr ds:[MultiplexId]
+    mov ah, ds:[MultiplexId]
     call ByteToHex
 
     ; store digits into message
     mov bx, offset MultiplexIdHexDigits
-    mov byte ptr [bx], ah
-    mov byte ptr [bx + 1], al
+    mov [bx], ah
+    mov [bx + 1], al
 
     pop bx ax
     ret
