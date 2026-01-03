@@ -7,13 +7,15 @@
 
 include common.inc
 
-extrn MultiplexId:               byte
-extrn SavedMultiplexVector:      dword
+extrn   MultiplexId:                byte
+extrn   SavedMultiplexVector:       dword
 
-MultiplexInterruptHandler        procdesc far
+MultiplexInterruptHandler           procdesc far
 
-public Psp
-public START_OF_NONRESIDENT_AREA
+public  Psp
+public  START_OF_NONRESIDENT_AREA
+
+ExtraParagraphs                     equ 4           ; extra paragraphs to allocate for resident portion
 
 ;;================================================
 ;; Resident data
@@ -22,7 +24,7 @@ public START_OF_NONRESIDENT_AREA
 .data
 
 ;; PSP segment
-Psp                     dw ?
+Psp                                 dw ?
 
 ;;================================================
 ;; Resident code
@@ -75,7 +77,7 @@ endif
 
     ;; --- Clear BSS ---
     xor ax, ax
-    mov di, offset START_OF_INIT_BSS
+    lea di, START_OF_INIT_BSS
     mov cx, (offset END_OF_INIT_BSS - offset START_OF_INIT_BSS + 1) SHR 1
     rep stosw
 
@@ -155,6 +157,7 @@ InstallCommand proc near
     lea dx, (START_OF_NONRESIDENT_AREA + 15)
     mov cl, 4                    ; convert to paragraphs
     shr dx, cl
+    add dx, ExtraParagraphs      ; add extra paragraphs for run-time needs
 
     ;; --- Terminate and stay resident ---
     DosKeepProgram dx
@@ -223,7 +226,7 @@ UninstallCommand endp
 ;; Outputs:  none
 ;; Clobbers: AX, CX
 SplitCommandLine proc near
-    push es bp si di
+    push si di bp es
 
     ;; --- Split command line into individual parameters ---
     mov si, 80h                  ; offset of command line length byte
@@ -283,7 +286,7 @@ SplitCommandLine proc near
 @@StartNewParameter:
     ; NUL-terminate current parameter
     push ax
-    mov al, 0
+    xor al, al
     stosb
     pop ax
 
@@ -299,13 +302,13 @@ SplitCommandLine proc near
 
 @@EndCurrParameter:
     ; NUL-terminate current parameter
-    mov al, 0
+    xor al, al
     stosb
 
     jmp @@SkipWhitespace
 
 @@Done:
-    pop di si bp es
+    pop es bp di si
     ret
 SplitCommandLine endp
 
