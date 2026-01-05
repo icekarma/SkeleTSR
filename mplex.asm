@@ -31,6 +31,12 @@ SavedMultiplexVector    dd ?
 MultiplexId             db 0
 
 ;;================================================
+;; Resident code
+;;================================================
+
+.code
+
+;;================================================
 ;; MultiplexInterruptHandler: Our multiplex interrupt handler
 ;;
 ;; Inputs:   AH = multiplex ID
