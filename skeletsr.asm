@@ -146,22 +146,22 @@ InstallCommand proc near
     DosWriteString SuccessfullyInstalledMsg
 
     ;; --- Free environment ---
-    mov ax, ds:[2Ch]             ; AX = block to free: the environment segment
-    cmp ax, -1                   ; no segment allocated?
+    mov ax, ds:[2Ch]                                ; AX = block to free: the environment segment
+    cmp ax, -1                                      ; no segment allocated?
     je @@CalcResident
 
-    mov es, ax                   ; ES = block to free
-    mov ah, 49h                  ; Free Block
-    int 21h                      ; Call DOS
+    mov es, ax                                      ; ES = block to free
+    mov ah, 49h                                     ; Free Block
+    int 21h                                         ; Call DOS
 
-    mov word ptr ds:[2Ch], -1    ; Clear environment segment in PSP
+    mov word ptr ds:[2Ch], -1                       ; Clear environment segment in PSP
 
     ;; --- Calculate memory footprint of resident portion ---
 @@CalcResident:
     mov dx, offset (START_OF_NONRESIDENT_AREA + 15)
-    mov cl, 4                    ; convert to paragraphs
+    mov cl, 4                                       ; convert to paragraphs
     shr dx, cl
-    add dx, ExtraParagraphs      ; add extra paragraphs for run-time needs
+    add dx, ExtraParagraphs                         ; add extra paragraphs for run-time needs
 
     ;; --- Terminate and stay resident ---
     DosKeepProgram dx
@@ -233,9 +233,9 @@ SplitCommandLine proc near
     multipush si, di, bp, es
 
     ;; --- Split command line into individual parameters ---
-    mov si, 80h                  ; offset of command line length byte
-    mov cl, ds:[si]              ; get length
-    inc si                       ; point to first character
+    mov si, 80h                                     ; offset of command line length byte
+    mov cl, ds:[si]                                 ; get length
+    inc si                                          ; point to first character
 
     mov [argc], 0                                   ; initialize argc to 0
     mov bp, offset argv                             ; point BP to argv array
@@ -258,16 +258,17 @@ SplitCommandLine proc near
 
     ; is it whitespace?
     call IsSpace
-    jnc @@SkipWhitespace          ; skip whitespace
+    jnc @@SkipWhitespace                            ; skip whitespace
 
     ;; --- Found start of parameter ---
+@@FoundParameter:
     ; Increment argc
     inc [argc]
 
     ; Store pointer to parameter in argv
     mov [bp], di
-    add bp, 2                    ; advance to next argv entry
-    stosb                        ; copy character to buffer
+    add bp, 2                                       ; advance to next argv entry
+    stosb                                           ; copy character to buffer
 
     ;; --- Copy characters until whitespace or '/' or end ---
 @@CopyParameter:
@@ -279,12 +280,12 @@ SplitCommandLine proc near
     lodsb
 
     call IsSpace
-    jnc @@EndCurrParameter       ; end of parameter
+    jnc @@EndCurrParameter                          ; end of parameter
 
-    cmp al, '/'                  ; check for '/'
-    je @@StartNewParameter       ; start of new parameter
+    cmp al, '/'                                     ; check for '/'
+    je @@StartNewParameter                          ; start of new parameter
 
-    stosb                        ; copy character to buffer
+    stosb                                           ; copy character to buffer
     jmp @@CopyParameter
 
 @@StartNewParameter:
@@ -294,15 +295,7 @@ SplitCommandLine proc near
     stosb
     pop ax
 
-    ; Increment argc
-    inc [argc]
-
-    ; Store pointer to parameter in argv
-    mov [bp], di
-    add bp, 2                    ; advance to next argv entry
-    stosb                        ; copy character to buffer
-
-    jmp @@CopyParameter
+    jmp @@FoundParameter
 
 @@EndCurrParameter:
     ; NUL-terminate current parameter
@@ -334,39 +327,39 @@ ParseCommandLine proc near
 
 @@Top:
     or dx, dx
-    jz @@Fail                    ; no more parameters
+    jz @@Fail                                       ; no more parameters
     dec dx
 
-    mov si, [bx + argv]          ; get pointer to parameter
-    add bx, 2                    ; advance to next parameter
+    mov si, [bx + argv]                             ; get pointer to parameter
+    add bx, 2                                       ; advance to next parameter
 
     lodsb
     or al, al
-    jz @@Top                     ; empty parameter, skip
+    jz @@Top                                        ; empty parameter, skip
 
-    cmp al, '/'                  ; check for '/'
+    cmp al, '/'                                     ; check for '/'
     je @@CheckParam
-    cmp al, '-'                  ; check for '-'
-    je @@CheckParam
+    cmp al, '-'                                     ; check for '-'
+    jne @@BadParam
 
 @@CheckParam:
     lodsb
     or al, al
-    jz @@BadParam                ; no parameter after '/' or '-'
+    jz @@BadParam                                   ; no parameter after '/' or '-'
 
     ; Check for 'u' (for "uninstall")
-    or al, 20h                   ; make lowercase
+    or al, 20h                                      ; make lowercase
     cmp al, 'u'
     jne @@BadParam
 
     ; Check for trailing characters
     lodsb
     or al, al
-    jnz @@BadParam               ; trailing characters after 'u'
+    jnz @@BadParam                                  ; trailing characters after 'u'
 
     pop si
-    mov ax, 1                    ; uninstall command
-    clc                          ; clear carry to indicate success
+    mov ax, 1                                       ; uninstall command
+    clc                                             ; clear carry to indicate success
     ret
 
 @@BadParam:
@@ -374,7 +367,7 @@ ParseCommandLine proc near
 
 @@Fail:
     pop si
-    stc                          ; set carry to indicate failure
+    stc                                             ; set carry to indicate failure
     ret
 ParseCommandLine endp
 
@@ -386,13 +379,13 @@ ParseCommandLine endp
 ;;           CF = 1 if not
 ;; Clobbers: none
 IsSpace proc near
-    cmp al, 32 ; space
+    cmp al, 32                                      ; space
     je @@Yes
-    cmp al, 13 ; carriage return
+    cmp al, 13                                      ; carriage return
     je @@Yes
-    cmp al, 10 ; line feed
+    cmp al, 10                                      ; line feed
     je @@Yes
-    cmp al, 9  ; tab
+    cmp al, 9                                       ; tab
     je @@Yes
 
     ; Not whitespace
@@ -422,10 +415,10 @@ FindFreeMultiplexId proc near
     int 2Fh
     pop cx
     or al, al
-    jnz @@NextId ; if AL is not 0, ID is not free
+    jnz @@NextId                                    ; if AL is not 0, ID is not free
 
     mov [MultiplexId], ch
-    clc ; clear carry to indicate success
+    clc                                             ; clear carry to indicate success
     ret
 
 @@NextId:
@@ -434,7 +427,7 @@ FindFreeMultiplexId proc near
     jae @@FindFreeId
 
     ;; --- No free ID found ---
-    stc ; set carry to indicate failure
+    stc                                             ; set carry to indicate failure
     ret
 FindFreeMultiplexId endp
 
