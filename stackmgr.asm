@@ -7,10 +7,10 @@
 
 include common.inc
 
-extrn START_OF_NONRESIDENT_AREA: byte
-
 public StackSwap
 public StackRestore
+
+extrn START_OF_NONRESIDENT_AREA: byte
 
 ;;================================================
 ;; Resident data

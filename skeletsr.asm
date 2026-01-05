@@ -7,6 +7,9 @@
 
 include common.inc
 
+public  Psp
+public  START_OF_NONRESIDENT_AREA
+
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
 
@@ -15,9 +18,6 @@ MultiplexInterruptHandler           procdesc far
 else
 MultiplexInterruptHandler           proto far
 endif
-
-public  Psp
-public  START_OF_NONRESIDENT_AREA
 
 ExtraParagraphs                     equ 4           ; extra paragraphs to allocate for resident portion
 

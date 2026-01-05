@@ -7,12 +7,12 @@
 
 include common.inc
 
-extrn Psp: word
-
 public MultiplexId
 public SavedMultiplexVector
 
 public MultiplexInterruptHandler
+
+extrn Psp: word
 
 ;;================================================
 ;; Resident data
