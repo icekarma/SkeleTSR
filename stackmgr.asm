@@ -149,7 +149,7 @@ StackRestore proc near
     lsr ds, ss                                      ; DS:SI => private stack
     mov si, sp
 
-    les di, cs:[bx + SavedStacks]         ; ES:DI => original stack
+    les di, cs:[bx + SavedStacks]                   ; ES:DI => original stack
     sub di, @@StackCopySize                         ; Make room for copied elements
 
     mov cx, (@@StackCopySize SHR 1)
