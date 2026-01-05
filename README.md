@@ -21,11 +21,10 @@ To use SkeleTSR as a base for your own TSR, follow these steps:
 
 2. Modify the source code to implement your desired functionality.
 
-3. Assemble the code using an assembler like TASM or MASM. It's been developed
-   with TASM 4.1, but should work with other assemblers with only minor
-   adjustments.
+3. Assemble the code using TASM or MASM. It has been developed with TASM 4.1,
+   but also assembles just fine with MASM 6.11.
 
-4. Test your TSR in a DOS environment.
+4. Test your TSR.
 
 ## License
 
