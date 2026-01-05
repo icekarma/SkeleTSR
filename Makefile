@@ -23,13 +23,13 @@
 BUILDTYPE=debug
 
 ##================================================
-## No user-serviceable parts below this line
+## No user-serviceable parts below here
 ##================================================
 
 NAME=SKELETSR
 
-LSTS=SEGMENTS.LST $(NAME).LST MPLEX.LST #STACKMGR.LST
-OBJS=SEGMENTS.OBJ $(NAME).OBJ MPLEX.OBJ #STACKMGR.OBJ
+LSTS=SEGMENTS.LST SKELETSR.LST MPLEX.LST
+OBJS=SEGMENTS.OBJ SKELETSR.OBJ MPLEX.OBJ
 COM=$(NAME).COM
 EXE=$(NAME).EXE
 MAP=$(NAME).MAP
@@ -82,9 +82,9 @@ $(EXE): $(OBJS)
 ## Dependencies
 ##
 
-mplex.obj:    mplex.asm    common.inc dosmacs.inc
 segments.obj: segments.asm
-$(NAME).obj:  $(NAME).asm  common.inc dosmacs.inc
+mplex.obj:    mplex.asm    common.inc dosmacs.inc
+skeletsr.obj: skeletsr.asm common.inc dosmacs.inc
 stackmgr.obj: stackmgr.asm common.inc dosmacs.inc
 
 ##
