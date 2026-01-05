@@ -101,17 +101,15 @@ StackSwap proc near
 
     ;; --- Done ---
     ;sti ; not actually needed, popf will handle it ; End critical section
-    cpop @@PushCount, flags, bx, cx, si, di, ds, es
+    cpop @@PushCount, flags, es, ds, di, si, cx, bx
     clc
     ret
 
 @@NoStacks:
     ;sti ; not actually needed, popf will handle it ; End critical section
-    cpop @@PushCount, flags, bx, cx, si, di, ds, es
+    cpop @@PushCount, flags, es, ds, di, si, cx, bx
     stc
     ret
-
-    purge @@PushCount
 StackSwap endp
 
 ;;================================================
