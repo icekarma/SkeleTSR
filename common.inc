@@ -15,8 +15,10 @@ assume  nothing
 assume  cs: DGROUP
 
 .8086
-.model  tiny, nolanguage
+.model  tiny
 
+ifdef ??version
 locals
+endif
 
 include dosmacs.inc

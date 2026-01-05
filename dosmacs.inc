@@ -16,7 +16,7 @@
 ;;           srcReg     = register containing segment value (or anything you can PUSH, really)
 ;; Outputs:  None
 lsr macro destSegReg: req, srcReg: req
-    errifidni <&destSegReg>, <&srcReg>
+    .erridni <&destSegReg>, <&srcReg>, "lsr: destSegReg and srcReg cannot be the same register"
     push srcReg
     pop  destSegReg
 endm
@@ -55,7 +55,39 @@ cpop macro expectedCount: req, regList: vararg
         endif
         count = count - 1
     endm
-    errif count NE 0, "cpop: Mismatched pop count"
+    if count NE 0
+        .err "cpop: Mismatched pop count"
+    endif
+endm
+
+;;================================================
+;; multipush: Push one or more items onto the stack
+;;
+;; Inputs:   regList =  list of items to push
+;; Outputs:  none
+multipush macro regList: vararg
+    irp reg, <regList>
+        ifidni <&reg>, <flags>
+            pushf
+        else
+            push reg
+        endif
+    endm
+endm
+
+;;================================================
+;; multipop: Pop one or more items from the stack
+;;
+;; Inputs:   regList = list of items to pop
+;; Outputs:  none
+multipop macro regList: vararg
+    irp reg, <regList>
+        ifidni <&reg>, <flags>
+            popf
+        else
+            pop reg
+        endif
+    endm
 endm
 
 ;;================================================

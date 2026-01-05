@@ -91,7 +91,7 @@ InstallationCheck endp
 ;;           AL = 1 on failure
 ;; Clobbers: none
 Uninstall proc near
-    push ax dx ds es
+    multipush ax, dx, ds, es
 
     ;;================================================
     ;; Can we uninstall?
@@ -120,7 +120,7 @@ Uninstall proc near
     int 21h
 
     ; Return success
-    pop es ds dx ax
+    multipop es, ds, dx, ax
     xor al, al
     ret
 
@@ -130,7 +130,7 @@ Uninstall proc near
 
 @@CantUninstall:
     ; Return failure
-    pop es ds dx ax
+    multipop es, ds, dx, ax
     mov al, 01h
     ret
 Uninstall endp

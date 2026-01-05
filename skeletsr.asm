@@ -10,7 +10,11 @@ include common.inc
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
 
+ifdef ??version
 MultiplexInterruptHandler           procdesc far
+else
+MultiplexInterruptHandler           proto far
+endif
 
 public  Psp
 public  START_OF_NONRESIDENT_AREA
@@ -226,7 +230,7 @@ UninstallCommand endp
 ;; Outputs:  none
 ;; Clobbers: AX, CX
 SplitCommandLine proc near
-    push si di bp es
+    multipush si, di, bp, es
 
     ;; --- Split command line into individual parameters ---
     mov si, 80h                  ; offset of command line length byte
@@ -308,7 +312,7 @@ SplitCommandLine proc near
     jmp @@SkipWhitespace
 
 @@Done:
-    pop es bp di si
+    multipop es, bp, di, si
     ret
 SplitCommandLine endp
 
@@ -478,7 +482,7 @@ FindOurMultiplexId endp
 ;; Outputs:  DS:BX => two ASCII hex digits representing the multiplex ID
 ;; Clobbers: none
 FormatMultiplexId proc near
-    push ax bx
+    multipush ax, bx
 
     ; convert multiplex ID to hex
     mov ah, ds:[MultiplexId]
@@ -489,7 +493,7 @@ FormatMultiplexId proc near
     mov [bx], ah
     mov [bx + 1], al
 
-    pop bx ax
+    multipop bx, ax
     ret
 FormatMultiplexId endp
 
