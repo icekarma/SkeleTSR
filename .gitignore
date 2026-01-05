@@ -1,8 +1,11 @@
+*.BSC
 *.COM
+*.DBG
 *.EXE
 *.LST
 *.MAP
 *.OBJ
+*.REF
 *.SBR
 *.TDS
 *.TD
