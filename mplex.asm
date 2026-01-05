@@ -61,12 +61,12 @@ MultiplexInterruptHandler proc far
     mov bl, al
     xor bh, bh
     shl bx, 1
-    call word ptr cs:[bx + MultiplexDispatchTable]
+    call cs:[bx + MultiplexDispatchTable]
     pop bx
     iret
 
 @@ChainToSavedHandler:
-    jmp dword ptr cs:[SavedMultiplexVector]
+    jmp cs:[SavedMultiplexVector]
 
 @@UnknownFunction:
     mov al, 01h
@@ -117,11 +117,11 @@ Uninstall proc near
     ;;================================================
 
     ; Restore original multiplex vector
-    lds dx, dword ptr cs:[SavedMultiplexVector]
+    lds dx, cs:[SavedMultiplexVector]
     DosSetVector 2Fh, ds, dx
 
     ; Free PSP and our resident code/data
-    mov es, word ptr cs:[Psp]
+    mov es, cs:[Psp]
     mov ah, 49h
     int 21h
 

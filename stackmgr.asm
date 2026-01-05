@@ -49,7 +49,7 @@ StackSwap proc near
 
     cli                                             ; Start critical section
 
-    mov bx, word ptr cs:[StacksInUse]
+    mov bx, cs:[StacksInUse]
     xor cx, cx
     mov dx, 1
 
@@ -64,13 +64,13 @@ StackSwap proc near
 
 @@StackAvailable:
     ;; Mark stack as used
-    or word ptr cs:[StacksInUse], dx
+    or cs:[StacksInUse], dx
 
     ;; Calculate SP for the private stack
     mov ax, bx
     mov cl, StackSizeShift
     shl ax, cl                                      ; AX = Index * StackSize
-    add ax, word ptr cs:[StackPoolBase]             ; Add base of stack pool
+    add ax, cs:[StackPoolBase]                      ; Add base of stack pool
     add ax, StackSize                               ; Adjust to end of stack, since stack grows downwards
     sub ax, @@StackCopySize                         ; Space for copied stack elements
 
@@ -139,7 +139,7 @@ StackRestore proc near
     mov cx, ax
     shl dx, cl                                      ; DX = bitmask for stack index
     not dx
-    and word ptr cs:[StacksInUse], dx
+    and cs:[StacksInUse], dx
 
     ;; --- Copy saved registers and return address from private stack to original stack ---
 
@@ -149,7 +149,7 @@ StackRestore proc near
     lsr ds, ss                                      ; DS:SI => private stack
     mov si, sp
 
-    les di, dword ptr cs:[bx + SavedStacks]         ; ES:DI => original stack
+    les di, cs:[bx + SavedStacks]         ; ES:DI => original stack
     sub di, @@StackCopySize                         ; Make room for copied elements
 
     mov cx, (@@StackCopySize SHR 1)
