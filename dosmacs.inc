@@ -97,7 +97,7 @@ endm
 ;; Outputs:  none
 DosWriteString macro msg: req
     mov ah, 09h                                     ; Write String
-    lea dx, msg                                     ; Load address of string
+    mov dx, offset msg                              ; Load address of string
     int 21h                                         ; Call DOS
 endm
 

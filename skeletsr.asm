@@ -81,7 +81,7 @@ endif
 
     ;; --- Clear BSS ---
     xor ax, ax
-    lea di, START_OF_INIT_BSS
+    mov di, offset START_OF_INIT_BSS
     mov cx, (offset END_OF_INIT_BSS - offset START_OF_INIT_BSS + 1) SHR 1
     rep stosw
 
@@ -158,7 +158,7 @@ InstallCommand proc near
 
     ;; --- Calculate memory footprint of resident portion ---
 @@CalcResident:
-    lea dx, (START_OF_NONRESIDENT_AREA + 15)
+    mov dx, offset (START_OF_NONRESIDENT_AREA + 15)
     mov cl, 4                    ; convert to paragraphs
     shr dx, cl
     add dx, ExtraParagraphs      ; add extra paragraphs for run-time needs
@@ -237,9 +237,9 @@ SplitCommandLine proc near
     mov cl, ds:[si]              ; get length
     inc si                       ; point to first character
 
-    mov [argc], 0                ; initialize argc to 0
-    lea bp, [argv]               ; point BP to argv array
-    lea di, [commandLineBuffer]  ; point DI to command line buffer
+    mov [argc], 0                                   ; initialize argc to 0
+    mov bp, offset argv                             ; point BP to argv array
+    mov di, offset commandLineBuffer                ; point DI to command line buffer
     lsr es, ds
 
     ;; DS:SI => PSP command line buffer
