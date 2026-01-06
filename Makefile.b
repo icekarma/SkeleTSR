@@ -28,8 +28,8 @@ BUILDTYPE=debug
 
 NAME=SKELETSR
 
-LSTS=SEGMENTS.LST SKELETSR.LST MPLEX.LST
-OBJS=SEGMENTS.OBJ SKELETSR.OBJ MPLEX.OBJ
+LSTS=SEGMENTS.LST SKELETSR.LST BSS.LST CMDLINE.LST MPLEX.LST
+OBJS=SEGMENTS.OBJ SKELETSR.OBJ BSS.OBJ CMDLINE.OBJ MPLEX.OBJ
 COM=$(NAME).COM
 EXE=$(NAME).EXE
 MAP=$(NAME).MAP
@@ -51,6 +51,9 @@ $(NAME): $(COM)
 ##
 ## Silly/useful targets, since DOSBox's command line is lame and doesn't support multiple commands on one line
 ##
+
+build:
+	@echo Current build type is: $(BUILDTYPE)
 
 cls:
 	cls
@@ -82,8 +85,10 @@ $(EXE): $(OBJS)
 ## Dependencies
 ##
 
-segments.obj: segments.asm
+bss.obj:      bss.asm      common.inc dosmacs.inc
+cmdline.obj:  cmdline.asm  common.inc dosmacs.inc
 mplex.obj:    mplex.asm    common.inc dosmacs.inc
+segments.obj: segments.asm common.inc dosmacs.inc
 skeletsr.obj: skeletsr.asm common.inc dosmacs.inc
 stackmgr.obj: stackmgr.asm common.inc dosmacs.inc
 

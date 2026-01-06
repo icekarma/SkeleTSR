@@ -22,10 +22,10 @@ BUILDTYPE=debug
 
 NAME=SKELETSR
 
-LSTS=SEGMENTS.LST SKELETSR.LST MPLEX.LST
-OBJS=SEGMENTS.OBJ SKELETSR.OBJ MPLEX.OBJ
+LSTS=SEGMENTS.LST SKELETSR.LST BSS.LST CMDLINE.LST MPLEX.LST
+OBJS=SEGMENTS.OBJ SKELETSR.OBJ BSS.OBJ CMDLINE.OBJ MPLEX.OBJ
 !if "$(BUILDTYPE)" != "release"
-SBRS=SEGMENTS.SBR SKELETSR.SBR MPLEX.SBR
+SBRS=SEGMENTS.SBR SKELETSR.SBR BSS.SBR CMDLINE.SBR MPLEX.SBR
 BSC=$(NAME).BSC
 !endif
 COM=$(NAME).COM
@@ -78,15 +78,17 @@ $(COM): $(OBJS)
 
 !if "$(BUILDTYPE)" != "release"
 $(BSC): $(SBRS)
-	bscmake /Iu /n /v /o $(BSC) $(SBRS)
+	bscmake /Iu /n /nologo /o $(BSC) $(SBRS)
 !endif
 
 ##
 ## Dependencies
 ##
 
-segments.obj: segments.asm
+bss.obj:      bss.asm      common.inc dosmacs.inc
+cmdline.obj:  cmdline.asm  common.inc dosmacs.inc
 mplex.obj:    mplex.asm    common.inc dosmacs.inc
+segments.obj: segments.asm common.inc dosmacs.inc
 skeletsr.obj: skeletsr.asm common.inc dosmacs.inc
 stackmgr.obj: stackmgr.asm common.inc dosmacs.inc
 
