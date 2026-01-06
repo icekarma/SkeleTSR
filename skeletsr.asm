@@ -8,16 +8,15 @@
 include common.inc
 
 public  Psp
+public  HelpMsg
 public  START_OF_NONRESIDENT_AREA
 
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
 
-ifdef ??version
-MultiplexInterruptHandler           procdesc far
-else
+InitBSS                             proto near
 MultiplexInterruptHandler           proto far
-endif
+ParseCommandLine                    proto near
 
 ExtraParagraphs                     equ 4           ; extra paragraphs to allocate for resident portion
 
