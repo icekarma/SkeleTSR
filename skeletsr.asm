@@ -126,15 +126,11 @@ InstallCommand proc near
     ;; --- Print "successfully installed" message ---
     DosWriteString SuccessfullyInstalledMsg
 
-    ;; --- Free environment ---
+    ;; --- Free environment, if present ---
     mov ax, ds:[2Ch]                                ; AX = block to free: the environment segment
     cmp ax, -1                                      ; no segment allocated?
     je @@CalcResident
-
-    mov es, ax                                      ; ES = block to free
-    mov ah, 49h                                     ; Free Block
-    int 21h                                         ; Call DOS
-
+    DosFreeAllocatedMemory ax
     mov word ptr ds:[2Ch], -1                       ; Clear environment segment in PSP
 
     ;; --- Calculate memory footprint of resident portion ---
