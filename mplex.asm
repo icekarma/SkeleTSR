@@ -141,16 +141,4 @@ Uninstall proc near
     ret
 Uninstall endp
 
-; Initialization code segment
-_INIT_TEXT  segment byte public 'INITCODE'
-_INIT_TEXT  ends
-
-; Initialization data segment
-_INIT_DATA  segment byte public 'INITDATA'
-_INIT_DATA  ends
-
-; Initialization uninitialized data segment
-_INIT_BSS   segment byte public 'INITBSS'
-_INIT_BSS   ends
-
 end

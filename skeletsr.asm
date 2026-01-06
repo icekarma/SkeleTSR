@@ -52,7 +52,7 @@ endif
 ;; Initialization code
 ;;================================================
 
-_INIT_TEXT segment byte public 'INITCODE'
+_INIT_TEXT segment byte public 'CODE_INIT'
 
 START_OF_NONRESIDENT_AREA label byte
 
@@ -331,7 +331,7 @@ _INIT_TEXT ENDS
 ;; Initialization data
 ;;================================================
 
-_INIT_DATA segment byte public 'INITDATA'
+_INIT_DATA segment byte public 'DATA_INIT'
 
 ;; Messages
 NoFreeIdMsg                 db 'No free multiplex ID found. Terminating.',       13, 10, '$'
@@ -347,13 +347,6 @@ HelpMsg                     db 'Usage: SkeleTSR [/u] [/?]',                     
 AlreadyInstalledMsg         db 'SkeleTSR is already installed. Terminating.',    13, 10, '$'
 
 _INIT_DATA ends
-
-;;================================================
-;; Initialization uninitialized data
-;;================================================
-
-_INIT_BSS segment byte public 'INITBSS'
-_INIT_BSS ends
 
 ;;================================================
 ;; The end
