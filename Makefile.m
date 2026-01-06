@@ -49,7 +49,7 @@ all: $(NAME)
 !if "$(BUILDTYPE)" == "release"
 $(NAME): $(COM)
 !else
-$(NAME): $(COM) $(BSC)
+$(NAME): $(BSC) $(COM)
 !endif
 
 ##
@@ -98,6 +98,11 @@ stackmgr.obj: stackmgr.asm common.inc dosmacs.inc
 
 .asm.obj:
 	ml $(MASMOPTS) $<
+
+!if "$(BUILDTYPE)" != "release"
+.asm.sbr:
+	ml $(MASMOPTS) $<
+!endif
 
 ##
 ## Clean up
