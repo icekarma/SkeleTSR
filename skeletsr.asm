@@ -79,21 +79,13 @@ Main proc near
 
     ;; --- Examine command line parameters ---
     call ParseCommandLine
-    jc @@DoInstall
+    jc InstallCommand
 
     cmp ax, 1
-    je @@DoUninstall
+    je UninstallCommand
 
     ;; --- Print usage and exit ---
     DosTerminateWithMessage 4, HelpMsg
-
-    ;; --- Install the TSR ---
-@@DoInstall:
-    jmp InstallCommand
-
-    ;; --- Uninstall the TSR ---
-@@DoUninstall:
-    jmp UninstallCommand
 Main endp
 
 ;;================================================
