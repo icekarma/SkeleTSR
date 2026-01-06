@@ -67,6 +67,19 @@ DosGetVector macro intNum: req
 endm
 
 ;;================================================
+;; DosFreeAllocatedMemory: Free memory allocated with DosAllocateMemory
+;;
+;; Inputs:   seg = segment of memory to free
+;; Outputs:  CF set on error
+DosFreeAllocatedMemory macro segmentToFree: req
+    mov ah, 49h                                     ; Free Allocated Memory
+    ifdifi <&segmentToFree>, <es>
+        lsr es, segmentToFree                       ; Segment to free
+    endif
+    int 21h                                         ; Call DOS
+endm
+
+;;================================================
 ;; DosTerminateProcess: Terminate process, with optional exit code
 ;;
 ;; Inputs:   exitCode = (optional) exit code to return to DOS (compile-time constant)
