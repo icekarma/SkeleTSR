@@ -353,15 +353,6 @@ _INIT_DATA ends
 ;;================================================
 
 _INIT_BSS segment byte public 'INITBSS'
-
-START_OF_INIT_BSS           label byte
-
-commandLineBuffer           db 256 dup (?)
-argv                        dw 128 dup (?)
-argc                        dw ?
-
-END_OF_INIT_BSS             label byte
-
 _INIT_BSS ends
 
 ;;================================================
