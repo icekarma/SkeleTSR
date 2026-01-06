@@ -85,12 +85,12 @@ $(BSC): $(SBRS)
 ## Dependencies
 ##
 
-bss.obj:      bss.asm      common.inc dosmacs.inc
-cmdline.obj:  cmdline.asm  common.inc dosmacs.inc
-mplex.obj:    mplex.asm    common.inc dosmacs.inc
-segments.obj: segments.asm common.inc dosmacs.inc
-skeletsr.obj: skeletsr.asm common.inc dosmacs.inc
-stackmgr.obj: stackmgr.asm common.inc dosmacs.inc
+bss.obj:      bss.asm      common.inc cpumacs.inc dosmacs.inc
+cmdline.obj:  cmdline.asm  common.inc cpumacs.inc dosmacs.inc
+mplex.obj:    mplex.asm    common.inc cpumacs.inc dosmacs.inc
+segments.obj: segments.asm common.inc cpumacs.inc dosmacs.inc
+skeletsr.obj: skeletsr.asm common.inc cpumacs.inc dosmacs.inc
+stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 
 ##
 ## Generic rules

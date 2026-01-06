@@ -21,4 +21,5 @@ ifdef ??version
 locals
 endif
 
+include cpumacs.inc
 include dosmacs.inc
