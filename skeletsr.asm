@@ -63,26 +63,16 @@ START_OF_NONRESIDENT_AREA label byte
 ;;           AL = 1 on failure
 ;; Clobbers: none
 Main proc near
+    assume ds: DGROUP
+
     ;; --- Ensure direction flag is clear ---
     cld
 
     ;; --- Save PSP ---
     mov cs:[Psp], ds
 
-    ;; --- Set up segment registers ---
-if @Model EQ 1
-    ; only load DS in tiny memory model -- other models have it set up already
-    lsr ds, cs
-endif
-    assume ds: DGROUP
-    lsr es, ds
-    assume es: DGROUP
-
     ;; --- Clear BSS ---
-    xor ax, ax
-    mov di, offset START_OF_INIT_BSS
-    mov cx, (offset END_OF_INIT_BSS - offset START_OF_INIT_BSS + 1) SHR 1
-    rep stosw
+    call InitBSS
 
     ;; --- Find the multiplex ID of an existing instance, if any ---
     call FindOurMultiplexId
