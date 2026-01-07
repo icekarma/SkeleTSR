@@ -7,11 +7,13 @@
 
 include common.inc
 
-extrn commandLineBuffer:            byte
-extrn argv:                         word
-extrn argc:                         word
+public  ParseCommandLine
 
-extrn HelpMsg:                      byte
+extrn   commandLineBuffer:            byte
+extrn   argv:                         word
+extrn   argc:                         word
+
+extrn   HelpMsg:                      byte
 
 ;;================================================
 ;; Initialization code
