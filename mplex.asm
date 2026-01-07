@@ -83,7 +83,7 @@ MultiplexInterruptHandler endp
 ;; Clobbers: none
 InstallationCheck proc near
     mov al, 0FFh ; Indicate installed
-    mov si, 'ZI' ; ZMP signature in BX:DX -- 'ZIVE'
+    mov si, 'ZI' ; ZMP signature in SI:DI -- 'ZIVE'
     mov di, 'VE'
     mov dx, 'SK' ; TSR signature in DX -- 'SK'
     ret
