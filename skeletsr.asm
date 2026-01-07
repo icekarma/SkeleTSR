@@ -138,7 +138,9 @@ InstallCommand proc near
     mov dx, offset (START_OF_NONRESIDENT_AREA + 15)
     mov cl, 4                                       ; convert to paragraphs
     shr dx, cl
+if ExtraParagraphs GT 0
     add dx, ExtraParagraphs                         ; add extra paragraphs for run-time needs
+endif
 
     ;; --- Terminate and stay resident ---
     DosKeepProgram dx
