@@ -106,11 +106,13 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 ##
 
 clean:
-	-for %a in ($(OBJS)) do if exist %a del %a
-	-for %a in ($(EXE)) do if exist %a del %a
-	-for %a in ($(COM)) do if exist %a del %a
-	-for %a in ($(TDS)) do if exist %a del %a
 !if "$(BUILDTYPE)" != "release"
 	-for %a in ($(LSTS)) do if exist %a del %a
+!endif
+	-for %a in ($(OBJS)) do if exist %a del %a
+	-for %a in ($(COM)) do if exist %a del %a
+!if "$(BUILDTYPE)" != "release"
+	-for %a in ($(EXE)) do if exist %a del %a
 	-for %a in ($(MAP)) do if exist %a del %a
+	-for %a in ($(TDS)) do if exist %a del %a
 !endif

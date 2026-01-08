@@ -16,6 +16,9 @@
 
 BUILDTYPE=debug
 
+## Set to "yes" to build browse information (debug builds only).
+BROWSEINFO=no
+
 ##================================================
 ## No user-serviceable parts below here
 ##================================================
@@ -24,7 +27,7 @@ NAME=skeletsr
 
 LSTS=segments.lst skeletsr.lst bss.lst cmdline.lst mplex.lst
 OBJS=segments.obj skeletsr.obj bss.obj cmdline.obj mplex.obj
-!if "$(BUILDTYPE)" != "release"
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
 SBRS=segments.sbr skeletsr.sbr bss.sbr cmdline.sbr mplex.sbr
 BSC=$(NAME).bsc
 !endif
@@ -36,20 +39,22 @@ DBG=$(NAME).dbg
 MAP=$(NAME).map
 !endif
 
-!if "$(BUILDTYPE)" == "release"
-MASMOPTS=/AT /c /Cp /W3 /nologo
+MASMOPTS=/AT /c /Cp /nologo
 LINKOPTS=/noi /nol /t
-!else
-MASMOPTS=/AT /c /Cp /W3 /nologo /Fl /FR /Sa /Sc /Sg /Sx /Zi
-LINKOPTS=/noi /nol /t /co /m
+!if "$(BUILDTYPE)" != "release"
+MASMOPTS=$(MASMOPTS) /Fl /Sa /Sc /Sg /Sx /W3 /Zi
+!if "$(BROWSEINFO)" == "yes"
+MASMOPTS=$(MASMOPTS) /FR
+!endif
+LINKOPTS=$(LINKOPTS) /co /m
 !endif
 
 all: $(NAME)
 
-!if "$(BUILDTYPE)" == "release"
-$(NAME): $(COM)
-!else
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
 $(NAME): $(COM) $(BSC)
+!else
+$(NAME): $(COM)
 !endif
 
 ##
@@ -78,7 +83,7 @@ $(COM): $(OBJS)
 	link $(LINKOPTS) $(OBJS),$(COM),$(MAP),,,
 	if not errorlevel 1 dir $(COM)
 
-!if "$(BUILDTYPE)" != "release"
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
 $(BSC): $(SBRS)
 	bscmake /Iu /n /nologo /o $(BSC) $(SBRS)
 !endif
@@ -101,7 +106,7 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 .asm.obj:
 	ml $(MASMOPTS) $<
 
-!if "$(BUILDTYPE)" != "release"
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
 .asm.sbr:
 	ml $(MASMOPTS) $<
 !endif
@@ -111,14 +116,16 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 ##
 
 clean:
-	-for %a in ($(OBJS)) do if exist %a del %a
 !if "$(BUILDTYPE)" != "release"
 	-for %a in ($(LSTS)) do if exist %a del %a
-	-for %a in ($(SBRS)) do if exist %a del %a
 !endif
-	-for %a in ($(BSC)) do if exist %a del %a
-	-for %a in ($(COM)) do if exist %a del %a
+	-for %a in ($(OBJS)) do if exist %a del %a
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
+	-for %a in ($(SBRS)) do if exist %a del %a
+	-if exist $(BSC) del $(BSC)
+!endif
+	-if exist $(COM) del $(COM)
 !if "$(BUILDTYPE)" != "release"
-	-for %a in ($(DBG)) do if exist %a del %a
-	-for %a in ($(MAP)) do if exist %a del %a
+	-if exist $(DBG) del $(DBG)
+	-if exist $(MAP) del $(MAP)
 !endif
