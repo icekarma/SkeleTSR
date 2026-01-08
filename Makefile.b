@@ -1,6 +1,6 @@
 ##================================================
 ## SKELETSR: A skeleton DOS TSR program
-## Makefile: `make` recipes for building SKELETSR
+## Makefile: `make` recipes for building SKELETSR with Borland MAKE
 ## Copyright © 2026 Zive Technology Research
 ## Licensed under the BSD 2-Clause License
 ##================================================
@@ -26,14 +26,14 @@ BUILDTYPE=debug
 ## No user-serviceable parts below here
 ##================================================
 
-NAME=SKELETSR
+NAME=skeletsr
 
-LSTS=SEGMENTS.LST SKELETSR.LST BSS.LST CMDLINE.LST MPLEX.LST
-OBJS=SEGMENTS.OBJ SKELETSR.OBJ BSS.OBJ CMDLINE.OBJ MPLEX.OBJ
-COM=$(NAME).COM
-EXE=$(NAME).EXE
-MAP=$(NAME).MAP
-TDS=$(NAME).TDS
+LSTS=segments.lst skeletsr.lst bss.lst cmdline.lst mplex.lst
+OBJS=segments.obj skeletsr.obj bss.obj cmdline.obj mplex.obj
+COM=$(NAME).com
+EXE=$(NAME).exe
+MAP=$(NAME).map
+TDS=$(NAME).tds
 
 ## Options common to both builds are set in TASM.CFG and TLINK.CFG.
 !if "$(BUILDTYPE)" == "release"
@@ -63,6 +63,8 @@ load: $(COM)
 
 unload: $(COM)
 	$(NAME) /u
+
+world: cls build clean all
 
 ##
 ## SKELETSR

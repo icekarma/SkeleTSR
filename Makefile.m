@@ -20,20 +20,20 @@ BUILDTYPE=debug
 ## No user-serviceable parts below here
 ##================================================
 
-NAME=SKELETSR
+NAME=skeletsr
 
-LSTS=SEGMENTS.LST SKELETSR.LST BSS.LST CMDLINE.LST MPLEX.LST
-OBJS=SEGMENTS.OBJ SKELETSR.OBJ BSS.OBJ CMDLINE.OBJ MPLEX.OBJ
+LSTS=segments.lst skeletsr.lst bss.lst cmdline.lst mplex.lst
+OBJS=segments.obj skeletsr.obj bss.obj cmdline.obj mplex.obj
 !if "$(BUILDTYPE)" != "release"
-SBRS=SEGMENTS.SBR SKELETSR.SBR BSS.SBR CMDLINE.SBR MPLEX.SBR
-BSC=$(NAME).BSC
+SBRS=segments.sbr skeletsr.sbr bss.sbr cmdline.sbr mplex.sbr
+BSC=$(NAME).bsc
 !endif
-COM=$(NAME).COM
+COM=$(NAME).com
 !if "$(BUILDTYPE)" == "release"
 MAP=NUL
 !else
-DBG=$(NAME).DBG
-MAP=$(NAME).MAP
+DBG=$(NAME).dbg
+MAP=$(NAME).map
 !endif
 
 !if "$(BUILDTYPE)" == "release"
@@ -49,7 +49,7 @@ all: $(NAME)
 !if "$(BUILDTYPE)" == "release"
 $(NAME): $(COM)
 !else
-$(NAME): $(BSC) $(COM)
+$(NAME): $(COM) $(BSC)
 !endif
 
 ##
@@ -67,6 +67,8 @@ load: $(COM)
 
 unload: $(COM)
 	$(NAME) /u
+
+world: cls build clean all
 
 ##
 ## SKELETSR
