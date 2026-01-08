@@ -13,6 +13,7 @@ public  START_OF_NONRESIDENT_AREA
 
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
+extrn   StartupAction:              byte
 
 InitBSS                             proto near
 MultiplexInterruptHandler           proto far
@@ -79,11 +80,19 @@ Main proc near
 
     ;; --- Examine command line parameters ---
     call ParseCommandLine
-    jc InstallCommand
 
-    cmp ax, 1
-    je UninstallCommand
+    xor bh, bh
+    mov bl, [StartupAction]
+    cmp bx, 2
+    ja @@InvalidParameter
 
+    shl bx, 1
+    call [bx + StartupActionDispatchTable]
+
+    ; should never get here, but just in case...
+    DosTerminateProcess 0
+
+@@InvalidParameter:
     ;; --- Print usage and exit ---
     DosTerminateWithMessage 4, HelpMsg
 Main endp
@@ -320,10 +329,15 @@ SuccessfullyInstalledMsg    db 'SkeleTSR successfully installed.',              
 SuccessfullyUninstalledMsg  db 'SkeleTSR successfully uninstalled.',             13, 10, '$'
 UninstallFailedMsg          db 'SkeleTSR uninstall failed.',                     13, 10, '$'
 NotInstalledMsg             db 'SkeleTSR is not installed.',                     13, 10, '$'
-HelpMsg                     db 'Usage: SkeleTSR [/u] [/?]',                      13, 10
-                            db '  /u    Uninstall SkeleTSR if it is installed.', 13, 10
+HelpMsg                     db 'Usage: SkeleTSR [/i | /u | /?]',                 13, 10
+                            db '  /i    Install SkeleTSR.',                      13, 10
+                            db '  /u    Uninstall SkeleTSR.',                    13, 10
                             db '  /?    Display this help message.',             13, 10, '$'
 AlreadyInstalledMsg         db 'SkeleTSR is already installed. Terminating.',    13, 10, '$'
+
+StartupActionDispatchTable  dw InstallCommand       ; action 0: default
+                            dw InstallCommand       ; action 1: install
+                            dw UninstallCommand     ; action 2: uninstall
 
 _INIT_DATA ends
 

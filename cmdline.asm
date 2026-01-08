@@ -8,12 +8,26 @@
 include common.inc
 
 public  ParseCommandLine
+public  StartupAction
 
 extrn   commandLineBuffer:            byte
 extrn   argv:                         word
 extrn   argc:                         word
 
 extrn   HelpMsg:                      byte
+
+;;================================================
+;; Initialization uninitialized data
+;;================================================
+
+_INIT_BSS segment byte public 'BSS_INIT'
+
+StartupAction    db ?                               ; action to take at startup:
+                                                    ; 0 = default
+                                                    ; 1 = install
+                                                    ; 2 = uninstall
+
+_INIT_BSS ends
 
 ;;================================================
 ;; Initialization code
@@ -136,62 +150,74 @@ SplitCommandLine endp
 ;; ParseCommandLine: Parse command line parameters
 ;;
 ;; Inputs:   none
-;; Outputs:  CF = 0 clear if actionable command line parameter found
-;;             AX = 1 if uninstall
-;;           CF = 1 if no actionable parameter found
-;; Clobbers: AX, BX, DX
+;; Outputs:  StartupAction = action to take at startup
+;; Clobbers: AX, BX, CX, SI
 ParseCommandLine proc near
-    push si
+    mov [StartupAction], 0                          ; default to no action
 
-    call SplitCommandLine
+    call SplitCommandLine                           ; split command line into argc/argv
 
-    xor bx, bx
-    mov dx, [argc]
+    xor bx, bx                                      ; bx = index into argv
+    mov cx, [argc]                                  ; cx = count of parameters remaining
+    or cx, cx
+    jz @@NoMoreParams                               ; no parameters
 
 @@Top:
-    or dx, dx
-    jz @@Fail                                       ; no more parameters
-    dec dx
-
+    ;; --- Process next parameter ---
     mov si, [bx + argv]                             ; get pointer to parameter
-    add bx, 2                                       ; advance to next parameter
+    add bx, 2                                       ; advance index
 
+    ; get first character
     lodsb
     or al, al
-    jz @@Top                                        ; empty parameter, skip
+    jz @@NextParam                                  ; empty parameter, skip
 
+    ;; --- Is parameter an option? ---
     cmp al, '/'                                     ; check for '/'
     je @@CheckParam
     cmp al, '-'                                     ; check for '-'
-    jne @@BadParam
+    jne @@BadParam                                  ; no args start with something else
 
 @@CheckParam:
+    ; get next character
     lodsb
     or al, al
     jz @@BadParam                                   ; no parameter after '/' or '-'
 
-    ; Check for 'u' (for "uninstall")
+    ;; --- Identify option ---
     or al, 20h                                      ; make lowercase
-    cmp al, 'u'
-    jne @@BadParam
+    cmp al, 'i'                                     ; check for 'i' (for "install")
+    je @@InstallParam
+    cmp al, 'u'                                     ; check for 'u' (for "uninstall")
+    je @@UninstallParam
 
-    ; Check for trailing characters
+@@BadParam:
+    DosTerminateWithMessage 4, HelpMsg              ; unknown parameter
+
+@@NextParam:
+    loop @@Top                                      ; process next parameter
+
+@@NoMoreParams:
+    ret
+
+    ;; --- 'Install' command ---
+@@InstallParam:
+    ; check for trailing characters
+    lodsb
+    or al, al
+    jnz @@BadParam                                  ; trailing characters after 'i'
+
+    mov [StartupAction], 1                          ; install
+    jmp @@NextParam                                 ; process next parameter
+
+@@UninstallParam:
+    ; check for trailing characters
     lodsb
     or al, al
     jnz @@BadParam                                  ; trailing characters after 'u'
 
-    pop si
-    mov ax, 1                                       ; uninstall command
-    clc                                             ; clear carry to indicate success
-    ret
-
-@@BadParam:
-    DosTerminateWithMessage 4, HelpMsg
-
-@@Fail:
-    pop si
-    stc                                             ; set carry to indicate failure
-    ret
+    mov [StartupAction], 2                          ; uninstall
+    jmp @@NextParam                                 ; process next parameter
 ParseCommandLine endp
 
 ;;================================================
