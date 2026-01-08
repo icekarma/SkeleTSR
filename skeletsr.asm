@@ -9,10 +9,10 @@ include common.inc
 
 public  Psp
 public  HelpMsg
-public  START_OF_NONRESIDENT_AREA
 
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
+extrn   START_OF_NONRESIDENT_AREA:  byte
 extrn   StartupAction:              byte
 
 InitBSS                             proto near
@@ -53,8 +53,6 @@ endif
 ;;================================================
 
 _INIT_TEXT segment byte public 'CODE_INIT'
-
-START_OF_NONRESIDENT_AREA label byte
 
 ;;================================================
 ;; Main: Main program

@@ -7,4 +7,12 @@
 
 include common.inc
 
+public START_OF_NONRESIDENT_AREA
+
+_INIT_TEXT segment byte public 'CODE_INIT'
+
+START_OF_NONRESIDENT_AREA label byte
+
+_INIT_TEXT ends
+
 end
