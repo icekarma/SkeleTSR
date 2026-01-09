@@ -13,10 +13,20 @@
 ##
 ## To switch build types, it is recommended to run `make clean` first, *before*
 ## changing the BUILDTYPE variable.
-
 BUILDTYPE=debug
 
-## Set to "yes" to build browse information (debug builds only).
+## Set to "masm" to use Microsoft's Macro Assembler (MASM).
+## Set to "jwasm" to use Japheth's JWASM assembler.
+## (If I can unify the Makefile:s, "tasm" will be supported for Borland''s Turbo
+## Assembler.)
+ASSEMBLER=masm
+
+## Set to "link" to use Microsoft's LINK linker.
+## (If I can unify the Makefile:s, "tlink" will be supported for Borland''s
+## Turbo Linker. "wlink" and "jwlink" may be added as well.)
+LINKER=link
+
+## Set to "yes" to build browse information (MASM debug builds only).
 BROWSEINFO=no
 
 ##================================================
@@ -25,44 +35,90 @@ BROWSEINFO=no
 
 NAME=skeletsr
 
+all: $(NAME)
+
+## Validate configuration options
+!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BUILDTYPE)" != "debug" )
+!	error Unknown build type specified: "$(BUILDTYPE)". Valid options are "release" and "debug".
+!endif
+!if ( "$(BROWSEINFO)" != "yes" ) && ( "$(BROWSEINFO)" != "no" )
+!	error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
+!endif
+!if ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
+!	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "masm" and "jwasm".
+!endif
+!if ( "$(LINKER)" != "link" )
+!	error Unknown linker specified: "$(LINKER)". Valid options are "link".
+!endif
+
+## Disable browse info if not using MASM in debug build
+!if ( "$(BROWSEINFO)" == "yes" ) && ( ( "$(ASSEMBLER)" != "masm" ) || ( "$(BUILDTYPE)" != "debug" ) )
+BROWSEINFO=no
+!endif
+
+## Configure assembler
+MASMOPTS=-c -Cp -nologo
+!if "$(ASSEMBLER)" == "masm"
+ASMCMD=ml
+!	if "$(BUILDTYPE)" == "debug"
+MASMOPTS=$(MASMOPTS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
+!		if "$(BROWSEINFO)" == "yes"
+MASMOPTS=$(MASMOPTS) -FR
+!		endif
+!	else
+MASMOPTS=$(MASMOPTS) -DNDEBUG
+!	endif
+!elseif "$(ASSEMBLER)" == "jwasm"
+ASMCMD=jwasmr
+!	if "$(BUILDTYPE)" == "debug"
+MASMOPTS=$(MASMOPTS) -Fl -Sa -W4 -Zi3 -D_DEBUG
+!	else
+MASMOPTS=$(MASMOPTS) -DNDEBUG
+!	endif
+!endif
+
+## Configure linker
+LINKOPTS=/noi /nol /t
+!if "$(BUILDTYPE)" == "debug"
+LINKOPTS=$(LINKOPTS) /co /m
+!endif
+
+## Configure output files
+!if "$(ASSEMBLER)" == "jwasm"
+ERRS=segments.err skeletsr.err bss.err cmdline.err mplex.err
+!endif
+!if "$(BUILDTYPE)" == "debug"
 LSTS=segments.lst skeletsr.lst bss.lst cmdline.lst mplex.lst
+!endif
 OBJS=segments.obj skeletsr.obj bss.obj cmdline.obj mplex.obj
-!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
+!if "$(BROWSEINFO)" == "yes"
 SBRS=segments.sbr skeletsr.sbr bss.sbr cmdline.sbr mplex.sbr
 BSC=$(NAME).bsc
 !endif
 COM=$(NAME).com
-!if "$(BUILDTYPE)" == "release"
-MAP=NUL
-!else
+!if "$(BUILDTYPE)" == "debug"
 DBG=$(NAME).dbg
 MAP=$(NAME).map
+!else
+MAP=NUL
 !endif
 
-MASMOPTS=/AT /c /Cp /nologo
-LINKOPTS=/noi /nol /t
-!if "$(BUILDTYPE)" != "release"
-MASMOPTS=$(MASMOPTS) /Fl /Sa /Sc /Sg /Sx /W3 /Zi
 !if "$(BROWSEINFO)" == "yes"
-MASMOPTS=$(MASMOPTS) /FR
-!endif
-LINKOPTS=$(LINKOPTS) /co /m
-!endif
-
-all: $(NAME)
-
-!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
 $(NAME): $(COM) $(BSC)
 !else
 $(NAME): $(COM)
 !endif
 
 ##
-## Silly/useful targets, since DOSBox's command line is lame and doesn't support multiple commands on one line
+## Silly/useful targets, since DOSBox's command line is lame and doesn't support
+## multiple commands on one line.
 ##
 
 build:
-	@echo Current build type is: $(BUILDTYPE)
+	@echo BUILDTYPE=$(BUILDTYPE)
+	@echo BROWSEINFO=$(BROWSEINFO)
+	@echo ASSEMBLER=$(ASSEMBLER)
+	@echo LINKER=$(LINKER)
 
 cls:
 	cls
@@ -76,14 +132,14 @@ unload: $(COM)
 world: cls build clean all
 
 ##
-## SKELETSR
+## Target executable
 ##
 
 $(COM): $(OBJS)
 	link $(LINKOPTS) $(OBJS),$(COM),$(MAP),,,
 	if not errorlevel 1 dir $(COM)
 
-!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
+!if "$(BROWSEINFO)" == "yes"
 $(BSC): $(SBRS)
 	bscmake /Iu /n /nologo /o $(BSC) $(SBRS)
 !endif
@@ -104,28 +160,31 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 ##
 
 .asm.obj:
-	ml $(MASMOPTS) $<
+	$(ASMCMD) $(MASMOPTS) $<
 
-!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
+!if "$(BROWSEINFO)" == "yes"
 .asm.sbr:
 	ml $(MASMOPTS) $<
 !endif
 
 ##
-## Clean up
+## Cleanup
 ##
 
 clean:
-!if "$(BUILDTYPE)" != "release"
+!if "$(ASSEMBLER)" == "jwasm"
+	-for %a in ($(ERRS)) do if exist %a del %a
+!endif
+!if "$(BUILDTYPE)" == "debug"
 	-for %a in ($(LSTS)) do if exist %a del %a
 !endif
 	-for %a in ($(OBJS)) do if exist %a del %a
-!if ( "$(BUILDTYPE)" != "release" ) && ( "$(BROWSEINFO)" == "yes" )
+!if "$(BROWSEINFO)" == "yes"
 	-for %a in ($(SBRS)) do if exist %a del %a
 	-if exist $(BSC) del $(BSC)
 !endif
 	-if exist $(COM) del $(COM)
-!if "$(BUILDTYPE)" != "release"
+!if "$(BUILDTYPE)" == "debug"
 	-if exist $(DBG) del $(DBG)
 	-if exist $(MAP) del $(MAP)
 !endif

@@ -1,6 +1,7 @@
 *.BSC
 *.COM
 *.DBG
+*.ERR
 *.EXE
 *.LST
 *.MAP
