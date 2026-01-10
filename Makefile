@@ -15,15 +15,14 @@
 ## changing the BUILDTYPE variable.
 BUILDTYPE=debug
 
+## Set to "tasm" to use Borland's Turbo Assembler.
 ## Set to "masm" to use Microsoft's Macro Assembler (MASM).
 ## Set to "jwasm" to use Japheth's JWASM assembler.
-## (If I can unify the Makefile:s, "tasm" will be supported for Borland''s Turbo
-## Assembler.)
 ASSEMBLER=masm
 
 ## Set to "link" to use Microsoft's LINK linker.
-## (If I can unify the Makefile:s, "tlink" will be supported for Borland''s
-## Turbo Linker. "wlink" and "jwlink" may be added as well.)
+## Set to "tlink" to use Borland's Turbo Linker.
+## ("wlink" and "jwlink" may be added in the future.)
 LINKER=link
 
 ## Set to "yes" to build browse information (MASM debug builds only).
@@ -44,11 +43,11 @@ all: $(NAME)
 !if ( "$(BROWSEINFO)" != "yes" ) && ( "$(BROWSEINFO)" != "no" )
 !	error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
 !endif
-!if ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
-!	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "masm" and "jwasm".
+!if ( "$(ASSEMBLER)" != "tasm" ) && ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
+!	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
 !endif
-!if ( "$(LINKER)" != "link" )
-!	error Unknown linker specified: "$(LINKER)". Valid options are "link".
+!if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" )
+!	error Unknown linker specified: "$(LINKER)". Valid options are "link" and "tlink".
 !endif
 
 ## Disable browse info if not using MASM in debug build
@@ -57,30 +56,47 @@ BROWSEINFO=no
 !endif
 
 ## Configure assembler
-MASMOPTS=-c -Cp -nologo
-!if "$(ASSEMBLER)" == "masm"
-ASMCMD=ml
+!if "$(ASSEMBLER)" == "tasm"
+ASMCMD=tasm
 !	if "$(BUILDTYPE)" == "debug"
-MASMOPTS=$(MASMOPTS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
+ASMOPTS=-zi -c -la
+!	else
+ASMOPTS=-zn
+!	endif
+!elseif "$(ASSEMBLER)" == "masm"
+ASMCMD=ml
+ASMOPTS=-c -Cp -nologo
+!	if "$(BUILDTYPE)" == "debug"
+ASMOPTS=$(ASMOPTS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
 !		if "$(BROWSEINFO)" == "yes"
-MASMOPTS=$(MASMOPTS) -FR
+ASMOPTS=$(ASMOPTS) -FR
 !		endif
 !	else
-MASMOPTS=$(MASMOPTS) -DNDEBUG
+ASMOPTS=$(ASMOPTS) -DNDEBUG
 !	endif
 !elseif "$(ASSEMBLER)" == "jwasm"
 ASMCMD=jwasmr
+ASMOPTS=-c -Cp -nologo
 !	if "$(BUILDTYPE)" == "debug"
-MASMOPTS=$(MASMOPTS) -Fl -Sa -W4 -Zi3 -D_DEBUG
+ASMOPTS=$(ASMOPTS) -Fl -Sa -W4 -Zi3 -D_DEBUG
 !	else
-MASMOPTS=$(MASMOPTS) -DNDEBUG
+ASMOPTS=$(ASMOPTS) -DNDEBUG
 !	endif
 !endif
 
 ## Configure linker
+!if "$(LINKER)" == "link"
 LINKOPTS=/noi /nol /t
-!if "$(BUILDTYPE)" == "debug"
+!	if "$(BUILDTYPE)" == "debug"
 LINKOPTS=$(LINKOPTS) /co /m
+!	endif
+!elseif "$(LINKER)" == "tlink"
+# most TLINK options are in tlink.cfg.
+!	if "$(BUILDTYPE)" == "debug"
+LINKOPTS=-Tde -s -v
+!	else
+LINKOPTS=-Tdc -x
+!	endif
 !endif
 
 ## Configure output files
@@ -97,8 +113,16 @@ BSC=$(NAME).bsc
 !endif
 COM=$(NAME).com
 !if "$(BUILDTYPE)" == "debug"
+!	if "$(LINKER)" == "link"
 DBG=$(NAME).dbg
+!	endif
+!	if "$(LINKER)" == "tlink"
+EXE=$(NAME).exe
+!	endif
 MAP=$(NAME).map
+!	if "$(LINKER)" == "tlink"
+TDS=$(NAME).tds
+!	endif
 !else
 MAP=NUL
 !endif
@@ -135,9 +159,24 @@ world: cls build clean all
 ## Target executable
 ##
 
+!if "$(LINKER)" == "link"
 $(COM): $(OBJS)
 	link $(LINKOPTS) $(OBJS),$(COM),$(MAP),,,
 	if not errorlevel 1 dir $(COM)
+!elseif "$(LINKER)" == "tlink"
+!	if "$(BUILDTYPE)" == "debug"
+$(COM): $(EXE)
+	tdstrip -c -s $(EXE)
+	if not errorlevel 1 dir $(COM)
+
+$(EXE): $(OBJS)
+	tlink $(LINKOPTS) $(OBJS),$(EXE),$(MAP)
+!	else
+$(COM): $(OBJS)
+	tlink $(LINKOPTS) $(OBJS),$(COM)
+	if not errorlevel 1 dir $(COM)
+!	endif
+!endif
 
 !if "$(BROWSEINFO)" == "yes"
 $(BSC): $(SBRS)
@@ -160,11 +199,11 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 ##
 
 .asm.obj:
-	$(ASMCMD) $(MASMOPTS) $<
+	$(ASMCMD) $(ASMOPTS) $<
 
 !if "$(BROWSEINFO)" == "yes"
 .asm.sbr:
-	ml $(MASMOPTS) $<
+	ml $(ASMOPTS) $<
 !endif
 
 ##
@@ -185,6 +224,13 @@ clean:
 !endif
 	-if exist $(COM) del $(COM)
 !if "$(BUILDTYPE)" == "debug"
+!	if "$(LINKER)" == "link"
 	-if exist $(DBG) del $(DBG)
+!	elseif "$(LINKER)" == "tlink"
+	-if exist $(EXE) del $(EXE)
+!	endif
 	-if exist $(MAP) del $(MAP)
+!	if "$(LINKER)" == "tlink"
+	-if exist $(TDS) del $(TDS)
+!	endif
 !endif
