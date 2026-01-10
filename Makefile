@@ -57,66 +57,67 @@ BROWSEINFO=no
 
 ## Configure assembler
 !if "$(ASSEMBLER)" == "tasm"
-ASMCMD=tasm
+AS=tasm
 !	if "$(BUILDTYPE)" == "debug"
-ASMOPTS=-zi -c -la
+AFLAGS=-zi -c -la
 !	else
-ASMOPTS=-zn
+AFLAGS=-zn
 !	endif
 !elseif "$(ASSEMBLER)" == "masm"
-ASMCMD=ml
-ASMOPTS=-c -Cp -nologo
+AS=ml
+AFLAGS=-c -Cp -nologo
 !	if "$(BUILDTYPE)" == "debug"
-ASMOPTS=$(ASMOPTS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
+AFLAGS=$(AFLAGS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
 !		if "$(BROWSEINFO)" == "yes"
-ASMOPTS=$(ASMOPTS) -FR
+AFLAGS=$(AFLAGS) -FR
 !		endif
 !	else
-ASMOPTS=$(ASMOPTS) -DNDEBUG
+AFLAGS=$(AFLAGS) -DNDEBUG
 !	endif
 !elseif "$(ASSEMBLER)" == "jwasm"
-ASMCMD=jwasmr
-ASMOPTS=-c -Cp -nologo
+AS=jwasmr
+AFLAGS=-c -Cp -nologo
 !	if "$(BUILDTYPE)" == "debug"
-ASMOPTS=$(ASMOPTS) -Fl -Sa -W4 -Zi3 -D_DEBUG
+AFLAGS=$(AFLAGS) -Fl -Sa -W4 -Zi3 -D_DEBUG
 !	else
-ASMOPTS=$(ASMOPTS) -DNDEBUG
+AFLAGS=$(AFLAGS) -DNDEBUG
 !	endif
 !endif
 
 ## Configure linker
 !if "$(LINKER)" == "link"
-LINKOPTS=/noi /nol /t
+LD=link
+LFLAGS=/noi /nol /t
 !	if "$(BUILDTYPE)" == "debug"
-LINKOPTS=$(LINKOPTS) /co /m
+LFLAGS=$(LFLAGS) /co /m
 !	endif
 !elseif "$(LINKER)" == "tlink"
-# most TLINK options are in tlink.cfg.
+LD=tlink
 !	if "$(BUILDTYPE)" == "debug"
-LINKOPTS=-Tde -s -v
+LFLAGS=-Tde -s -v
 !	else
-LINKOPTS=-Tdc -x
+LFLAGS=-Tdc -x
 !	endif
 !endif
 
 ## Configure output files
+ASMS=segments.asm skeletsr.asm bss.asm cmdline.asm mplex.asm
 !if "$(ASSEMBLER)" == "jwasm"
-ERRS=segments.err skeletsr.err bss.err cmdline.err mplex.err
+ERRS=$(ASMS:.asm=.err)
 !endif
 !if "$(BUILDTYPE)" == "debug"
-LSTS=segments.lst skeletsr.lst bss.lst cmdline.lst mplex.lst
+LSTS=$(ASMS:.asm=.lst)
 !endif
-OBJS=segments.obj skeletsr.obj bss.obj cmdline.obj mplex.obj
+OBJS=$(ASMS:.asm=.obj)
 !if "$(BROWSEINFO)" == "yes"
-SBRS=segments.sbr skeletsr.sbr bss.sbr cmdline.sbr mplex.sbr
+SBRS=$(ASMS:.asm=.sbr)
 BSC=$(NAME).bsc
 !endif
 COM=$(NAME).com
 !if "$(BUILDTYPE)" == "debug"
 !	if "$(LINKER)" == "link"
 DBG=$(NAME).dbg
-!	endif
-!	if "$(LINKER)" == "tlink"
+!	elseif "$(LINKER)" == "tlink"
 EXE=$(NAME).exe
 !	endif
 MAP=$(NAME).map
@@ -140,9 +141,9 @@ $(NAME): $(COM)
 
 build:
 	@echo BUILDTYPE=$(BUILDTYPE)
-	@echo BROWSEINFO=$(BROWSEINFO)
 	@echo ASSEMBLER=$(ASSEMBLER)
 	@echo LINKER=$(LINKER)
+	@echo BROWSEINFO=$(BROWSEINFO)
 
 cls:
 	cls
@@ -161,7 +162,7 @@ world: cls build clean all
 
 !if "$(LINKER)" == "link"
 $(COM): $(OBJS)
-	link $(LINKOPTS) $(OBJS),$(COM),$(MAP),,,
+	$(LD) $(LFLAGS) $(OBJS),$(COM),$(MAP),,,
 	if not errorlevel 1 dir $(COM)
 !elseif "$(LINKER)" == "tlink"
 !	if "$(BUILDTYPE)" == "debug"
@@ -170,10 +171,10 @@ $(COM): $(EXE)
 	if not errorlevel 1 dir $(COM)
 
 $(EXE): $(OBJS)
-	tlink $(LINKOPTS) $(OBJS),$(EXE),$(MAP)
+	$(LD) $(LFLAGS) $(OBJS),$(EXE),$(MAP)
 !	else
 $(COM): $(OBJS)
-	tlink $(LINKOPTS) $(OBJS),$(COM)
+	$(LD) $(LFLAGS) $(OBJS),$(COM)
 	if not errorlevel 1 dir $(COM)
 !	endif
 !endif
@@ -198,12 +199,9 @@ stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 ## Generic rules
 ##
 
-.asm.obj:
-	$(ASMCMD) $(ASMOPTS) $<
-
 !if "$(BROWSEINFO)" == "yes"
 .asm.sbr:
-	ml $(ASMOPTS) $<
+	ml $(AFLAGS) $<
 !endif
 
 ##
@@ -229,7 +227,9 @@ clean:
 !	elseif "$(LINKER)" == "tlink"
 	-if exist $(EXE) del $(EXE)
 !	endif
+!	if "$(MAP)" != "NUL"
 	-if exist $(MAP) del $(MAP)
+!	endif
 !	if "$(LINKER)" == "tlink"
 	-if exist $(TDS) del $(TDS)
 !	endif
