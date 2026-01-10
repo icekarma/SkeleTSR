@@ -32,13 +32,13 @@ To use SkeleTSR as a base for your own TSR, follow these steps.
 2. Edit the appropriate Makefile to set the user-configurable options:
    Makefile.b for TASM, and Makefile.m for MASM and JWasm.
 
-   - BUILDTYPE: `debug` or `release`. In a debug build, _DEBUG is defined, and
-     the assembler and linker are instructed to generate debug information. In
-     a release build, NDEBUG is defined, and no debug information is
+   - BUILDTYPE: `debug` or `release`. In a debug build, `_DEBUG` is defined,
+     and the assembler and linker are instructed to generate debug information.
+     In a release build, `NDEBUG` is defined, and no debug information is
      generated.
-   - BROWSEINFO: `yes` or `no`. If set to `yes`, MASM (only) is instructed to
-     generate browse information, and `BSCMAKE` is invoked to generate a .BSC
-     file. Only meaningful when BUILDTYPE is `debug` and ASSEMBLER is `masm`.
+   - BROWSEINFO: `yes` or `no`. Only meaningful when BUILDTYPE is `debug` and
+     ASSEMBLER is `masm`. If set to `yes`, MASM is instructed to generate
+     browse information, and `BSCMAKE` is invoked to generate a `.BSC` file.
    - ASSEMBLER: `tasm`, `masm`, or `jwasm`. Specifies the assembler to use.
    - LINKER: `link` or `tlink`. Specifies the linker to use.
 
