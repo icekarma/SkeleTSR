@@ -20,11 +20,6 @@ developers looking to create their own TSR applications.
   - Borland Make
   - Microsoft NMake
 
-Support for OpenWatcom WMake will probably be forthcoming. Support for
-OpenWatcom WASM will probably not be forthcoming, as its syntax seems to be
-quite different from MASM, and I am having trouble locating documentation for
-it.
-
 ## Getting Started
 
 To use SkeleTSR as a base for your own TSR, follow these steps.
@@ -44,22 +39,13 @@ To use SkeleTSR as a base for your own TSR, follow these steps.
    - BROWSEINFO: `yes` or `no`. If set to `yes`, MASM (only) is instructed to
      generate browse information, and `BSCMAKE` is invoked to generate a .BSC
      file. Only meaningful when BUILDTYPE is `debug` and ASSEMBLER is `masm`.
-   - ASSEMBLER: `masm` or `jwasm`. Specifies the assembler to use.
-   - LINKER: `link`. Specifies the linker to use. (Support for other linkers is
-     forthcoming.)
+   - ASSEMBLER: `tasm`, `masm`, or `jwasm`. Specifies the assembler to use.
+   - LINKER: `link` or `tlink`. Specifies the linker to use.
 
 3. Modify the source code to implement your desired functionality.
 
-4. Build the TSR with Make. Two Makefiles have been provided: Makefile.b for
-   Borland MAKE, and Makefile.m for Microsoft NMAKE.
-
-   Borland:
-
-     `make -f Makefile.b`
-
-   Microsoft:
-
-     `nmake -f Makefile.m`
+4. Build the TSR with Make. The Makefile provided is compatible with both
+   Borland MAKE and Microsoft NMAKE.
 
 5. Test your TSR.
 
