@@ -10,10 +10,6 @@ include common.inc
 public  ParseCommandLine
 public  StartupAction
 
-extrn   commandLineBuffer:            byte
-extrn   argv:                         word
-extrn   argc:                         word
-
 extrn   HelpMsg:                      byte
 
 ;;================================================
@@ -22,12 +18,16 @@ extrn   HelpMsg:                      byte
 
 _INIT_BSS segment byte public 'BSS_INIT'
 
-StartupAction    db ?                               ; action to take at startup:
+commandLineBuffer   db 256 dup (?)
+argv                dw 128 dup (?)
+argc                dw ?
+
+StartupAction       db ?                            ; action to take at startup:
                                                     ; 0 = default
                                                     ; 1 = install
                                                     ; 2 = uninstall
 
-_INIT_BSS ends
+_INIT_BSS           ends
 
 ;;================================================
 ;; Initialization code
