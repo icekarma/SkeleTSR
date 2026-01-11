@@ -12,10 +12,11 @@ public  HelpMsg
 
 extrn   MultiplexId:                byte
 extrn   SavedMultiplexVector:       dword
-extrn   START_OF_NONRESIDENT_AREA:  byte
 extrn   StartupAction:              byte
+extrn   START_OF_NONRESIDENT_AREA:  byte
+extrn   START_OF_INIT_BSS:          byte
+extrn     END_OF_INIT_BSS:          byte
 
-InitBSS                             proto near
 MultiplexInterruptHandler           proto far
 ParseCommandLine                    proto near
 
@@ -183,6 +184,27 @@ UninstallCommand proc near
 @@UninstalledFailed:
     DosTerminateWithMessage 3, UninstallFailedMsg
 UninstallCommand endp
+
+;;================================================
+;; InitBSS: Initialize the BSS segment to zero
+;;
+;; Inputs:   none
+;; Outputs:  none
+;; Clobbers: AX, CX, DI, ES
+InitBSS proc near
+    lsr es, ds
+    assume es: DGROUP
+
+    mov di, offset START_OF_INIT_BSS
+    xor al, al
+    mov cx, offset END_OF_INIT_BSS
+    sub cx, di
+    shr cx, 1
+    rep stosw
+    ret
+
+    assume es: nothing
+InitBSS endp
 
 ;;================================================
 ;; FindFreeMultiplexId: Find a free multiplex ID in range 0C0h-0FFh
