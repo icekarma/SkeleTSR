@@ -101,7 +101,7 @@ LFLAGS=-Tdc -x
 !endif
 
 ## Configure output files
-ASMS=segments.asm skeletsr.asm bss.asm cmdline.asm mplex.asm
+ASMS=segstart.asm skeletsr.asm cmdline.asm mplex.asm segend.asm
 !if "$(ASSEMBLER)" == "jwasm"
 ERRS=$(ASMS:.asm=.err)
 !endif
@@ -162,7 +162,11 @@ world: cls build clean all
 
 !if "$(LINKER)" == "link"
 $(COM): $(OBJS)
-	$(LD) $(LFLAGS) $(OBJS),$(COM),$(MAP),,,
+	$(LD) @<<
+$(LFLAGS) $**
+$(COM)
+$(MAP);
+<<
 	if not errorlevel 1 dir $(COM)
 !elseif "$(LINKER)" == "tlink"
 !	if "$(BUILDTYPE)" == "debug"
@@ -188,10 +192,10 @@ $(BSC): $(SBRS)
 ## Dependencies
 ##
 
-bss.obj:      bss.asm      common.inc cpumacs.inc dosmacs.inc
 cmdline.obj:  cmdline.asm  common.inc cpumacs.inc dosmacs.inc
 mplex.obj:    mplex.asm    common.inc cpumacs.inc dosmacs.inc
-segments.obj: segments.asm common.inc cpumacs.inc dosmacs.inc
+segend.obj:   segend.asm   common.inc cpumacs.inc dosmacs.inc
+segstart.obj: segstart.asm common.inc cpumacs.inc dosmacs.inc
 skeletsr.obj: skeletsr.asm common.inc cpumacs.inc dosmacs.inc
 stackmgr.obj: stackmgr.asm common.inc cpumacs.inc dosmacs.inc
 
