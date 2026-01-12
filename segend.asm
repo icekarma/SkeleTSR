@@ -13,8 +13,6 @@ public END_OF_INIT_TEXT
 public END_OF_INIT_DATA
 public END_OF_INIT_BSS
 
-public END_OF_NONRESIDENT_AREA
-
 _TEXT                       segment word public 'CODE'
 END_OF_TEXT                 label byte
 _TEXT                       ends
@@ -25,7 +23,6 @@ _DATA                       ends
 
 _INIT_TEXT                  segment byte public 'CODE_INIT'
 END_OF_INIT_TEXT            label byte
-END_OF_NONRESIDENT_AREA     label byte
 _INIT_TEXT                  ends
 
 _INIT_DATA                  segment byte public 'DATA_INIT'
