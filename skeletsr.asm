@@ -350,7 +350,7 @@ SuccessfullyUninstalledMsg  db 'SkeleTSR successfully uninstalled.',            
 UninstallFailedMsg          db 'SkeleTSR uninstall failed.',                     13, 10, '$'
 NotInstalledMsg             db 'SkeleTSR is not installed.',                     13, 10, '$'
 HelpMsg                     db 'Usage: SkeleTSR [/i | /u | /?]',                 13, 10
-                            db '  /i    Install SkeleTSR.',                      13, 10
+                            db '  /i    Install SkeleTSR (default).',            13, 10
                             db '  /u    Uninstall SkeleTSR.',                    13, 10
                             db '  /?    Display this help message.',             13, 10, '$'
 AlreadyInstalledMsg         db 'SkeleTSR is already installed. Terminating.',    13, 10, '$'
