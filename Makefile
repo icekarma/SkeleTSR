@@ -118,12 +118,10 @@ COM=$(NAME).com
 !	if "$(LINKER)" == "link"
 DBG=$(NAME).dbg
 !	elseif "$(LINKER)" == "tlink"
+DBG=$(NAME).tds
 EXE=$(NAME).exe
 !	endif
 MAP=$(NAME).map
-!	if "$(LINKER)" == "tlink"
-TDS=$(NAME).tds
-!	endif
 !else
 MAP=NUL
 !endif
@@ -226,15 +224,11 @@ clean:
 !endif
 	-if exist $(COM) del $(COM)
 !if "$(BUILDTYPE)" == "debug"
-!	if "$(LINKER)" == "link"
 	-if exist $(DBG) del $(DBG)
-!	elseif "$(LINKER)" == "tlink"
+!	if "$(LINKER)" == "tlink"
 	-if exist $(EXE) del $(EXE)
 !	endif
 !	if "$(MAP)" != "NUL"
 	-if exist $(MAP) del $(MAP)
-!	endif
-!	if "$(LINKER)" == "tlink"
-	-if exist $(TDS) del $(TDS)
 !	endif
 !endif
