@@ -22,7 +22,7 @@ ASSEMBLER=masm
 
 ## Set to "link" to use Microsoft's LINK linker.
 ## Set to "tlink" to use Borland's Turbo Linker.
-## ("wlink" and "jwlink" may be added in the future.)
+## Set to "jwlink" to use Japheth's JWLINK linker.
 LINKER=link
 
 ## Set to "yes" to build browse information (MASM debug builds only).
@@ -46,8 +46,8 @@ all: $(NAME)
 !if ( "$(ASSEMBLER)" != "tasm" ) && ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
 !	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
 !endif
-!if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" )
-!	error Unknown linker specified: "$(LINKER)". Valid options are "link" and "tlink".
+!if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" ) && ( "$(LINKER)" != "jwlink" )
+!	error Unknown linker specified: "$(LINKER)". Valid options are "link", "tlink", and "jwlink".
 !endif
 
 ## Disable browse info if not using MASM in debug build
@@ -98,6 +98,8 @@ LFLAGS=-Tde -s -v
 !	else
 LFLAGS=-Tdc -x
 !	endif
+!elseif "$(LINKER)" == "jwlink"
+LD=jwlink
 !endif
 
 ## Configure output files
@@ -120,6 +122,8 @@ DBG=$(NAME).dbg
 !	elseif "$(LINKER)" == "tlink"
 DBG=$(NAME).tds
 EXE=$(NAME).exe
+!	elseif "$(LINKER)" == "jwlink"
+DBG=$(NAME).sym
 !	endif
 MAP=$(NAME).map
 !else
@@ -177,6 +181,32 @@ $(EXE): $(OBJS)
 !	else
 $(COM): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(COM)
+	if not errorlevel 1 dir $(COM)
+!	endif
+!elseif "$(LINKER)" == "jwlink"
+!	if "$(BUILDTYPE)" == "debug"
+$(COM): $(OBJS)
+	# JWlink gets upset if any of the output files already exist
+	@-if exist $(COM) del $(COM)
+	@-if exist $(DBG) del $(DBG)
+	@-if exist $(MAP) del $(MAP)
+	$(LD) @<<
+system com
+name   $(COM)
+debug  watcom all
+option map=$(MAP)
+file   $(**: =,)
+<<
+	if not errorlevel 1 dir $(COM)
+!	else
+$(COM): $(OBJS)
+	# JWlink gets upset if any of the output files already exist
+	@-if exist $(COM) del $(COM)
+	$(LD) @<<
+system com
+name   $(COM)
+file   $(**: =,)
+<<
 	if not errorlevel 1 dir $(COM)
 !	endif
 !endif
