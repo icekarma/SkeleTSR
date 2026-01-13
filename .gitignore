@@ -8,6 +8,7 @@
 *.OBJ
 *.REF
 *.SBR
+*.SYM
 *.TDS
 *.TD
 *.TR
