@@ -186,7 +186,7 @@ $(COM): $(OBJS)
 !elseif "$(LINKER)" == "jwlink"
 !	if "$(BUILDTYPE)" == "debug"
 $(COM): $(OBJS)
-	# JWlink gets upset if any of the output files already exist
+# JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
 	@-if exist $(DBG) del $(DBG)
 	@-if exist $(MAP) del $(MAP)
@@ -200,7 +200,7 @@ file   $(**: =,)
 	-if not errorlevel 1 dir $(COM)
 !	else
 $(COM): $(OBJS)
-	# JWlink gets upset if any of the output files already exist
+# JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
 	$(LD) @<<
 system com
