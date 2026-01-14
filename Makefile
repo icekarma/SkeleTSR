@@ -169,19 +169,19 @@ $(LFLAGS) $**
 $(COM)
 $(MAP);
 <<
-	if not errorlevel 1 dir $(COM)
+	-if not errorlevel 1 dir $(COM)
 !elseif "$(LINKER)" == "tlink"
 !	if "$(BUILDTYPE)" == "debug"
 $(COM): $(EXE)
 	tdstrip -c -s $(EXE)
-	if not errorlevel 1 dir $(COM)
+	-if not errorlevel 1 dir $(COM)
 
 $(EXE): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(EXE),$(MAP)
 !	else
 $(COM): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(COM)
-	if not errorlevel 1 dir $(COM)
+	-if not errorlevel 1 dir $(COM)
 !	endif
 !elseif "$(LINKER)" == "jwlink"
 !	if "$(BUILDTYPE)" == "debug"
@@ -197,7 +197,7 @@ debug  watcom all
 option map=$(MAP)
 file   $(**: =,)
 <<
-	if not errorlevel 1 dir $(COM)
+	-if not errorlevel 1 dir $(COM)
 !	else
 $(COM): $(OBJS)
 	# JWlink gets upset if any of the output files already exist
@@ -207,7 +207,7 @@ system com
 name   $(COM)
 file   $(**: =,)
 <<
-	if not errorlevel 1 dir $(COM)
+	-if not errorlevel 1 dir $(COM)
 !	endif
 !endif
 
