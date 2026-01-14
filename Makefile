@@ -195,6 +195,7 @@ system com
 name   $(COM)
 debug  watcom all
 option map=$(MAP)
+option symfile=$(DBG)
 file   $(**: =,)
 <<
 	-if not errorlevel 1 dir $(COM)
