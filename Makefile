@@ -38,16 +38,16 @@ all: $(NAME)
 
 ## Validate configuration options
 !if ( "$(BUILDTYPE)" != "release" ) && ( "$(BUILDTYPE)" != "debug" )
-!	error Unknown build type specified: "$(BUILDTYPE)". Valid options are "release" and "debug".
+!   error Unknown build type specified: "$(BUILDTYPE)". Valid options are "release" and "debug".
 !endif
 !if ( "$(BROWSEINFO)" != "yes" ) && ( "$(BROWSEINFO)" != "no" )
-!	error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
+!   error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
 !endif
 !if ( "$(ASSEMBLER)" != "tasm" ) && ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
-!	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
+!   error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
 !endif
 !if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" ) && ( "$(LINKER)" != "jwlink" )
-!	error Unknown linker specified: "$(LINKER)". Valid options are "link", "tlink", and "jwlink".
+!   error Unknown linker specified: "$(LINKER)". Valid options are "link", "tlink", and "jwlink".
 !endif
 
 ## Disable browse info if not using MASM in debug build
@@ -58,46 +58,46 @@ BROWSEINFO=no
 ## Configure assembler
 !if "$(ASSEMBLER)" == "tasm"
 AS=tasm
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=-zi -c -la
-!	else
+!   else
 AFLAGS=-zn
-!	endif
+!   endif
 !elseif "$(ASSEMBLER)" == "masm"
 AS=ml
 AFLAGS=-c -Cp -nologo
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=$(AFLAGS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
-!		if "$(BROWSEINFO)" == "yes"
+!       if "$(BROWSEINFO)" == "yes"
 AFLAGS=$(AFLAGS) -FR
-!		endif
-!	else
+!       endif
+!   else
 AFLAGS=$(AFLAGS) -DNDEBUG
-!	endif
+!   endif
 !elseif "$(ASSEMBLER)" == "jwasm"
 AS=jwasmr
 AFLAGS=-c -Cp -nologo
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=$(AFLAGS) -Fl -Sa -W4 -Zi3 -D_DEBUG
-!	else
+!   else
 AFLAGS=$(AFLAGS) -DNDEBUG
-!	endif
+!   endif
 !endif
 
 ## Configure linker
 !if "$(LINKER)" == "link"
 LD=link
 LFLAGS=/noi /nol /t
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 LFLAGS=$(LFLAGS) /co /m
-!	endif
+!   endif
 !elseif "$(LINKER)" == "tlink"
 LD=tlink
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 LFLAGS=-Tde -s -v
-!	else
+!   else
 LFLAGS=-Tdc -x
-!	endif
+!   endif
 !elseif "$(LINKER)" == "jwlink"
 LD=jwlink
 !endif
@@ -117,14 +117,14 @@ BSC=$(NAME).bsc
 !endif
 COM=$(NAME).com
 !if "$(BUILDTYPE)" == "debug"
-!	if "$(LINKER)" == "link"
+!   if "$(LINKER)" == "link"
 DBG=$(NAME).dbg
-!	elseif "$(LINKER)" == "tlink"
+!   elseif "$(LINKER)" == "tlink"
 DBG=$(NAME).tds
 EXE=$(NAME).exe
-!	elseif "$(LINKER)" == "jwlink"
+!   elseif "$(LINKER)" == "jwlink"
 DBG=$(NAME).sym
-!	endif
+!   endif
 MAP=$(NAME).map
 !else
 MAP=NUL
@@ -171,20 +171,20 @@ $(MAP);
 <<
 	-if not errorlevel 1 dir $(COM)
 !elseif "$(LINKER)" == "tlink"
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 $(COM): $(EXE)
 	tdstrip -c -s $(EXE)
 	-if not errorlevel 1 dir $(COM)
 
 $(EXE): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(EXE),$(MAP)
-!	else
+!   else
 $(COM): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(COM)
 	-if not errorlevel 1 dir $(COM)
-!	endif
+!   endif
 !elseif "$(LINKER)" == "jwlink"
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 $(COM): $(OBJS)
 # JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
@@ -199,7 +199,7 @@ option symfile=$(DBG)
 file   $(**: =,)
 <<
 	-if not errorlevel 1 dir $(COM)
-!	else
+!   else
 $(COM): $(OBJS)
 # JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
@@ -209,7 +209,7 @@ name   $(COM)
 file   $(**: =,)
 <<
 	-if not errorlevel 1 dir $(COM)
-!	endif
+!   endif
 !endif
 
 !if "$(BROWSEINFO)" == "yes"
@@ -256,10 +256,10 @@ clean:
 	-if exist $(COM) del $(COM)
 !if "$(BUILDTYPE)" == "debug"
 	-if exist $(DBG) del $(DBG)
-!	if "$(LINKER)" == "tlink"
+!   if "$(LINKER)" == "tlink"
 	-if exist $(EXE) del $(EXE)
-!	endif
-!	if "$(MAP)" != "NUL"
+!   endif
+!   if "$(MAP)" != "NUL"
 	-if exist $(MAP) del $(MAP)
-!	endif
+!   endif
 !endif
