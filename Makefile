@@ -17,12 +17,13 @@ BUILDTYPE=debug
 
 ## Set to "tasm" to use Borland's Turbo Assembler.
 ## Set to "masm" to use Microsoft's Macro Assembler (MASM).
-## Set to "jwasm" to use Japheth's JWASM assembler.
+## Set to "jwasm" to use Japheth's JWasm assembler.
 ASSEMBLER=masm
 
 ## Set to "link" to use Microsoft's LINK linker.
 ## Set to "tlink" to use Borland's Turbo Linker.
-## Set to "jwlink" to use Japheth's JWLINK linker.
+## Set to "jwlink" to use Japheth's JWlink linker, producing debug info in Watcom format.
+## Set to "jwlink-cv" to use Japheth's JWlink linker, producing debug info in CodeView format.
 LINKER=link
 
 ## Set to "yes" to build browse information (MASM debug builds only).
@@ -38,16 +39,16 @@ all: $(NAME)
 
 ## Validate configuration options
 !if ( "$(BUILDTYPE)" != "release" ) && ( "$(BUILDTYPE)" != "debug" )
-!	error Unknown build type specified: "$(BUILDTYPE)". Valid options are "release" and "debug".
+!   error Unknown build type specified: "$(BUILDTYPE)". Valid options are "release" and "debug".
 !endif
 !if ( "$(BROWSEINFO)" != "yes" ) && ( "$(BROWSEINFO)" != "no" )
-!	error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
+!   error Unknown BROWSEINFO option specified: "$(BROWSEINFO)". Valid options are "yes" and "no".
 !endif
 !if ( "$(ASSEMBLER)" != "tasm" ) && ( "$(ASSEMBLER)" != "masm" ) && ( "$(ASSEMBLER)" != "jwasm" )
-!	error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
+!   error Unknown assembler specified: "$(ASSEMBLER)". Valid options are "tasm", "masm", and "jwasm".
 !endif
-!if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" ) && ( "$(LINKER)" != "jwlink" )
-!	error Unknown linker specified: "$(LINKER)". Valid options are "link", "tlink", and "jwlink".
+!if ( "$(LINKER)" != "link" ) && ( "$(LINKER)" != "tlink" ) && ( "$(LINKER)" != "jwlink" ) && ( "$(LINKER)" != "jwlink-cv" )
+!   error Unknown linker specified: "$(LINKER)". Valid options are "link", "tlink", "jwlink", and "jwlink-cv".
 !endif
 
 ## Disable browse info if not using MASM in debug build
@@ -58,48 +59,60 @@ BROWSEINFO=no
 ## Configure assembler
 !if "$(ASSEMBLER)" == "tasm"
 AS=tasm
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=-zi -c -la
-!	else
+!   else
 AFLAGS=-zn
-!	endif
+!   endif
 !elseif "$(ASSEMBLER)" == "masm"
 AS=ml
 AFLAGS=-c -Cp -nologo
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=$(AFLAGS) -Fl -Sa -Sc -W3 -Zi -D_DEBUG
-!		if "$(BROWSEINFO)" == "yes"
+!       if "$(BROWSEINFO)" == "yes"
 AFLAGS=$(AFLAGS) -FR
-!		endif
-!	else
+!       endif
+!   else
 AFLAGS=$(AFLAGS) -DNDEBUG
-!	endif
+!   endif
 !elseif "$(ASSEMBLER)" == "jwasm"
 AS=jwasmr
 AFLAGS=-c -Cp -nologo
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 AFLAGS=$(AFLAGS) -Fl -Sa -W4 -Zi3 -D_DEBUG
-!	else
+!   else
 AFLAGS=$(AFLAGS) -DNDEBUG
-!	endif
+!   endif
 !endif
 
 ## Configure linker
 !if "$(LINKER)" == "link"
 LD=link
 LFLAGS=/noi /nol /t
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 LFLAGS=$(LFLAGS) /co /m
-!	endif
+!   endif
 !elseif "$(LINKER)" == "tlink"
 LD=tlink
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 LFLAGS=-Tde -s -v
-!	else
+!   else
 LFLAGS=-Tdc -x
-!	endif
+!   endif
 !elseif "$(LINKER)" == "jwlink"
+# No LFLAGS for JWlink, because it uses a response file instead.
 LD=jwlink
+LFLAGS=
+!   if "$(BUILDTYPE)" == "debug"
+DBGFORMAT=watcom
+!   endif
+!elseif "$(LINKER)" == "jwlink-cv"
+# No LFLAGS for JWlink, because it uses a response file instead.
+LD=jwlink
+LFLAGS=
+!   if "$(BUILDTYPE)" == "debug"
+DBGFORMAT=codeview
+!   endif
 !endif
 
 ## Configure output files
@@ -117,14 +130,14 @@ BSC=$(NAME).bsc
 !endif
 COM=$(NAME).com
 !if "$(BUILDTYPE)" == "debug"
-!	if "$(LINKER)" == "link"
+!   if ( "$(LINKER)" == "link" ) || ( "$(LINKER)" == "jwlink-cv" )
 DBG=$(NAME).dbg
-!	elseif "$(LINKER)" == "tlink"
+!   elseif "$(LINKER)" == "tlink"
 DBG=$(NAME).tds
 EXE=$(NAME).exe
-!	elseif "$(LINKER)" == "jwlink"
+!   elseif "$(LINKER)" == "jwlink"
 DBG=$(NAME).sym
-!	endif
+!   endif
 MAP=$(NAME).map
 !else
 MAP=NUL
@@ -171,20 +184,20 @@ $(MAP);
 <<
 	-if not errorlevel 1 dir $(COM)
 !elseif "$(LINKER)" == "tlink"
-!	if "$(BUILDTYPE)" == "debug"
+!   if "$(BUILDTYPE)" == "debug"
 $(COM): $(EXE)
 	tdstrip -c -s $(EXE)
 	-if not errorlevel 1 dir $(COM)
 
 $(EXE): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(EXE),$(MAP)
-!	else
+!   else
 $(COM): $(OBJS)
 	$(LD) $(LFLAGS) $(OBJS),$(COM)
 	-if not errorlevel 1 dir $(COM)
-!	endif
-!elseif "$(LINKER)" == "jwlink"
-!	if "$(BUILDTYPE)" == "debug"
+!   endif
+!elseif ( "$(LINKER)" == "jwlink" ) || ( "$(LINKER)" == "jwlink-cv" )
+!   if "$(BUILDTYPE)" == "debug"
 $(COM): $(OBJS)
 # JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
@@ -193,13 +206,16 @@ $(COM): $(OBJS)
 	$(LD) @<<
 system com
 name   $(COM)
-debug  watcom all
+debug  $(DBGFORMAT) all
 option map=$(MAP)
 option symfile=$(DBG)
 file   $(**: =,)
 <<
 	-if not errorlevel 1 dir $(COM)
-!	else
+!       if "$(DBGFORMAT)" == "codeview"
+	cvpack $(DBG)
+!       endif
+!   else
 $(COM): $(OBJS)
 # JWlink gets upset if any of the output files already exist
 	@-if exist $(COM) del $(COM)
@@ -209,7 +225,7 @@ name   $(COM)
 file   $(**: =,)
 <<
 	-if not errorlevel 1 dir $(COM)
-!	endif
+!   endif
 !endif
 
 !if "$(BROWSEINFO)" == "yes"
@@ -256,10 +272,10 @@ clean:
 	-if exist $(COM) del $(COM)
 !if "$(BUILDTYPE)" == "debug"
 	-if exist $(DBG) del $(DBG)
-!	if "$(LINKER)" == "tlink"
+!   if "$(LINKER)" == "tlink"
 	-if exist $(EXE) del $(EXE)
-!	endif
-!	if "$(MAP)" != "NUL"
+!   endif
+!   if "$(MAP)" != "NUL"
 	-if exist $(MAP) del $(MAP)
-!	endif
+!   endif
 !endif
