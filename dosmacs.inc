@@ -45,14 +45,14 @@ endm
 ;;           memSize  = size of memory to keep resident (in paragraphs)
 ;; Outputs:  none (never returns)
 DosKeepProgram macro memSize: req, exitCode
-    ifb <exitCode>                                  ; Check if argument is blank
-        mov ax, 3100h                               ; Keep Program with default exit code
-    else
-        mov ax, 3100h OR ( exitCode AND 0FFh )      ; Keep Program with supplied exit code
-    endif
-    ifdifi <&memSize>, <dx>
-        mov dx, memSize
-    endif
+ifb <exitCode>                                      ; Check if argument is blank
+    mov ax, 3100h                                   ; Keep Program with default exit code
+else
+    mov ax, 3100h OR ( exitCode AND 0FFh )          ; Keep Program with supplied exit code
+endif
+ifdifi <&memSize>, <dx>
+    mov dx, memSize
+endif
     int 21h                                         ; Call DOS
 endm
 
@@ -67,15 +67,28 @@ DosGetVector macro intNum: req
 endm
 
 ;;================================================
+;; DosGetVector2: Macro to get an interrupt vector
+;;
+;; Inputs:   intNum =  interrupt number
+;; Outputs:  ES:BX  => interrupt handler
+DosGetVector2 macro intNum: req
+    mov ah, 35h                                     ; Get Interrupt Vector
+ifdifi <&intNum>, <al>
+    mov al, intNum                                  ; Interrupt number
+endif
+    int 21h                                         ; Call DOS
+endm
+
+;;================================================
 ;; DosFreeAllocatedMemory: Free memory allocated with DosAllocateMemory
 ;;
 ;; Inputs:   seg = segment of memory to free
 ;; Outputs:  CF set on error
 DosFreeAllocatedMemory macro segmentToFree: req
     mov ah, 49h                                     ; Free Allocated Memory
-    ifdifi <&segmentToFree>, <es>
-        lsr es, segmentToFree                       ; Segment to free
-    endif
+ifdifi <&segmentToFree>, <es>
+    lsr es, segmentToFree                           ; Segment to free
+endif
     int 21h                                         ; Call DOS
 endm
 
@@ -85,11 +98,11 @@ endm
 ;; Inputs:   exitCode = (optional) exit code to return to DOS (compile-time constant)
 ;; Outputs:  none (never returns)
 DosTerminateProcess macro exitCode
-    ifb <exitCode>
-        mov ax, 4C00h                               ; Terminate Process with default exit code
-    else
-        mov ax, 4C00h OR ( exitCode AND 0FFh )      ; Terminate Process with supplied exit code
-    endif
+ifb <exitCode>
+    mov ax, 4C00h                                   ; Terminate Process with default exit code
+else
+    mov ax, 4C00h OR ( exitCode AND 0FFh )          ; Terminate Process with supplied exit code
+endif
     int 21h                                         ; Call DOS
 endm
 
