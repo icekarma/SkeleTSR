@@ -67,6 +67,19 @@ DosGetVector macro intNum: req
 endm
 
 ;;================================================
+;; DosGetVector2: Macro to get an interrupt vector
+;;
+;; Inputs:   intNum =  interrupt number
+;; Outputs:  ES:BX  => interrupt handler
+DosGetVector2 macro intNum: req
+    mov ah, 35h                                     ; Get Interrupt Vector
+ifdifi <&intNum>, <al>
+    mov al, intNum                                  ; Interrupt number
+endif
+    int 21h                                         ; Call DOS
+endm
+
+;;================================================
 ;; DosFreeAllocatedMemory: Free memory allocated with DosAllocateMemory
 ;;
 ;; Inputs:   seg = segment of memory to free
